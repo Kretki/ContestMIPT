@@ -1,16 +1,16 @@
 :root {
     --white-text: #E5E5E5;
-    --title-color: #5e3b76;
-    --text-colored: #6a0dad;
-    --background-white-color: #f7f7f7;
-    --widget-color: #8a2be2;
-    --backgournd-dark-color: rgba(106, 13, 173, 0.1);
-    --shadow-dark-color: rgba(106, 13, 173, 0.2);
-    --border-color: #ccc;
-    --hover-color: rgba(106, 13, 173, 0.4);
+    --title-color: #1e3a5f;
+    --text-colored: #0066cc;
+    --background-white-color: #f0f8ff;
+    --widget-color: #4169e1;
+    --backgournd-dark-color: rgba(0, 102, 204, 0.1);
+    --shadow-dark-color: rgba(0, 102, 204, 0.2);
+    --border-color: #b0c4de;
+    --hover-color: rgba(0, 102, 204, 0.4);
     --dark-box-shadow: rgba(0, 0, 0, 0.1);
-    --bright-box-shadow: rgba(106, 13, 173, 0.3);
-    --background-gradient-borders: rgba(147,112,219,0.6);
+    --bright-box-shadow: rgba(0, 102, 204, 0.3);
+    --background-gradient-borders: rgba(65, 105, 225, 0.6);
 }
 
 body {
