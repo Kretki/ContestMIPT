@@ -1,0 +1,432 @@
+:root {
+    --white-text: #E5E5E5;
+    --title-color: #5e3b76;
+    --text-colored: #6a0dad;
+    --background-white-color: #f7f7f7;
+    --widget-color: #8a2be2;
+    --backgournd-dark-color: rgba(106, 13, 173, 0.1);
+    --shadow-dark-color: rgba(106, 13, 173, 0.2);
+    --border-color: #ccc;
+    --hover-color: rgba(106, 13, 173, 0.4);
+    --dark-box-shadow: rgba(0, 0, 0, 0.1);
+    --bright-box-shadow: rgba(106, 13, 173, 0.3);
+    --background-gradient-borders: rgba(147,112,219,0.6);
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background: var(--background-white-color);
+    position: relative;
+}
+
+/* Стили для главной страницы */
+/* Общий стиль страницы */
+.welcome-page {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+/* Заголовок */
+.hero-content h1 {
+    font-size: 3rem;
+    color: var(--text-colored);
+    margin-bottom: 10px;
+}
+
+/* Описание */
+.hero-slogan {
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+}
+
+/* Разделы для студентов и преподавателей */
+.user-section {
+    background: var(--backgournd-dark-color);
+    padding: 15px;
+    margin: 40px auto;
+    border-radius: 20px;
+    max-width: 800px;
+    box-shadow: 0px 5px 15px var(--shadow-dark-color);
+}
+
+.section-title {
+    font-size: 2rem;
+    color: var(--text-colored);
+}
+
+.section-description {
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+}
+
+/* Кнопки */
+.btn {
+    display: inline-block;
+    margin: 10px;
+    padding: 12px 25px;
+    font-size: 1.2rem;
+    border-radius: 25px;
+    color: var(--white-text);
+    background: var(--widget-color);
+    text-decoration: none;
+    transition: transform 0.2s, box-shadow 0.3s;
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 5px 15px var(--hover-color);
+}
+
+/* Карточки */
+.info-cards {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 50px;
+}
+
+.card {
+    width: 300px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0px 5px 15px var(--dark-box-shadow);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 20px var(--bright-box-shadow);
+}
+
+.card img {
+    width: 100%;
+    border-radius: 10px;
+    transition: transform 0.3s;
+}
+
+/* Отодвигающийся эффект для изображений */
+.card:hover img {
+    transform: translateX(10px);
+}
+
+.card h3 {
+    margin-top: 15px;
+    font-size: 1.4rem;
+    color: var(--text-colored);
+}
+
+.card p {
+    font-size: 1.1rem;
+}
+
+/* Фоновый градиент */
+.background-circles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, var(--background-gradient-borders) 0%, transparent 50%, var(--background-gradient-borders) 100%);
+    z-index: -3;
+}
+.why-us {
+    margin-top: 50px;
+    text-align: center;
+}
+
+.features {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.feature-card {
+    width: 280px;
+    background: white;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0px 5px 15px var(--dark-box-shadow);
+    text-align: center;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 10px 20px var(--bright-box-shadow);
+}
+
+.feature-card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* Блок "Топ-участники" */
+.top-players {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.leaderboard {
+    list-style: none;
+    padding: 0;
+    font-size: 1.3rem;
+}
+
+.leaderboard li {
+    background: var(--backgournd-dark-color);
+    margin: 10px auto;
+    padding: 15px;
+    border-radius: 15px;
+    max-width: 400px;
+    transition: transform 0.3s;
+}
+
+.leaderboard li:hover {
+    transform: scale(1.05);
+}
+
+
+/* Стили для кружков внутри боковых контейнеров */
+.side-circles {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    z-index: -2;
+}
+
+.side-circles.left {
+    left: 0;
+}
+
+.side-circles.right {
+    right: 0;
+}
+
+.side-circles .circle {
+    width: 80px;
+    height: 80px;
+    background: var(--bright-box-shadow);
+    border-radius: 50%;
+}
+
+
+/* Общие поля ввода */
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 90%;
+    max-width: 500px;
+    padding: 10px;
+    margin: 10px auto;
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    box-sizing: border-box;
+    display: block;
+}
+
+/* Центрирование форм */
+form {
+    text-align: center;
+}
+
+/* Стили для списков и элементов */
+.contest-list {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+}
+
+.contest-list li {
+    margin: 10px 0;
+}
+
+.contest-list a {
+    color: var(--text-colored);
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+.problem-item {
+    padding: 10px;
+    margin: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    text-align: center;
+    transition: background 0.3s;
+    display: inline-block;
+}
+
+.problem-item a {
+    text-decoration: none;
+    color: var(--text-colored);
+}
+
+.problem-item:hover {
+    background-color: var(--background-white-color);
+}
+
+.option-item {
+    margin: 10px 0;
+}
+
+.result-message {
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.result-message.correct {
+    color: green;
+}
+
+.result-message.incorrect {
+    color: red;
+}
+
+/* Стиль главной страницы (hero) */
+.welcome-page {
+    text-align: center;
+    padding: 100px 20px;
+}
+
+.welcome-page h1 {
+    font-size: 3em;
+    color: var(--text-colored);
+    margin-bottom: 20px;
+    animation: fadeInDown 1s ease-out;
+}
+
+.welcome-page p {
+    font-size: 1.3em;
+    margin-bottom: 30px;
+}
+
+/* Простая анимация для заголовка */
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Прочие стили для страниц */
+.login-page,
+.contests-page,
+.contest-details,
+.problems-page,
+.problem-page {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+/* Общие стили */
+.container  {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.container h1 {
+    font-size: 3rem;
+    color: var(--text-colored);
+    margin-bottom: 10px;
+}
+
+.container h2 {
+    font-size: 2rem;
+    color: var(--text-colored);
+    margin-top: 15px;
+}
+
+.task-title {
+    font-size: 2em;
+    font-weight: bold;
+    color: var(--title-color);
+    margin-bottom: 20px;
+}
+
+.task-info-wrapper {
+    background: var(--backgournd-dark-color);
+    padding: 40px;
+    margin: 15px auto;
+    border-radius: 20px;
+    width: 100%;
+    box-shadow: 0px 5px 15px var(--shadow-dark-color);
+}
+
+.task-info {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.task-info td {
+    padding: 8px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.task-description-box{
+    background: var(--backgournd-dark-color);
+    padding: 40px;
+    margin: 15px auto;
+    border-radius: 20px;
+    width: 100%;
+    box-shadow: 0px 5px 15px var(--shadow-dark-color);
+}
+.task-description-box h2{
+    margin-top: 15px;
+    font-size: 2rem;
+    color: var(--text-colored);
+}
+
+.examples-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    width: 100%;
+}
+
+.example {
+    background: var(--backgournd-dark-color);
+    padding: 15px;
+    border-radius: 20px;
+    text-align: left;
+    box-shadow: 0px 5px 15px var(--shadow-dark-color);
+}
+
+pre.input, pre.output {
+    background: white;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 1em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.code-submit-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#code {
+    width: 100%;
+    height: 150px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1em;
+}

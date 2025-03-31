@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Вопрос{% endblock %}
+{% block content %}
+<header>
+    <h1>Вопрос</h1>
+</header>
+<p>{{ task.question }}</p>
+<form method="post">
+    {% for option in task.options %}
+    <div style="margin-bottom:10px;">
+        <input type="radio" id="option{{ loop.index0 }}" name="option" value="{{ loop.index0 }}"
+            {% if selected is defined and selected == loop.index0 %}checked{% endif %}>
+        <label for="option{{ loop.index0 }}">{{ option }}</label>
+        {% if selected is defined and loop.index0 == selected %}
+            {% if is_correct %}
+                <span style="color:green;">&#10003;</span>
+            {% else %}
+                <span style="color:red;">&#10007;</span>
+            {% endif %}
+        {% endif %}
+    </div>
+    {% endfor %}
+    <button type="submit">Подтвердить результат</button>
+</form>
+<div style="margin-top:20px;">
+    <a href="{{ url_for('tasks_overview', contest_id=contest_id) }}"><button>Назад к списку задач</button

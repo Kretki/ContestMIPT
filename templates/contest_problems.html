@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Задачи контеста{% endblock %}
+{% block content %}
+<div class="problems-page">
+    <h2>Задачи контеста</h2>
+    <div class="problems-list">
+        {% for problem in problems %}
+            <div class="problem-item">
+                <a href="{{ url_for('contest_problem', contest_id=contest_id, problem_id=problem.id) }}">{{ problem.title }}</a>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

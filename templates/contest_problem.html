@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container task-container">
+    <h1 class="task-title">1. A+B</h1>
+    <div class="task-info-wrapper">
+        <table class="task-info">
+            <tr><td>Ограничение времени</td><td>2 секунды</td></tr>
+            <tr><td>Ограничение памяти</td><td>64Mb</td></tr>
+            <tr><td>Ввод</td><td>стандартный ввод или input.txt</td></tr>
+            <tr><td>Вывод</td><td>стандартный вывод или output.txt</td></tr>
+        </table>
+    </div>
+
+    <div class="task-description-box">
+        <h2>Описание задачи</h2>
+        <p> Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.</p>
+    </div>
+
+    <div class="task-description-box">
+        <h2>Формат ввода</h2>
+        <p>Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.</p>
+    </div>
+
+    <div class="task-description-box">
+        <h2>Формат вывода</h2>
+        <p>В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.</p>
+    </div>
+
+    <h2>Примеры</h2>
+    <div class="examples-grid">
+        <div class="example">
+            <pre class="input">Ввод
+2 2</pre>
+            <pre class="output">Вывод
+4</pre>
+        </div>
+        <div class="example">
+            <pre class="input">Ввод
+57 43</pre>
+            <pre class="output">Вывод
+100</pre>
+        </div>
+        <div class="example">
+            <pre class="input">Ввод
+123456789 673243342</pre>
+            <pre class="output">Вывод
+796700131</pre>
+        </div>
+    </div>
+
+    <h2>Отправка решения</h2>
+    <div class="task-description-box">
+        <form class="code-submit-form">
+            <label for="language">Выберите язык</label>
+            <select id="language" name="language">
+                <option value="python">Python</option>
+                <option value="cpp">C++</option>
+                <option value="java">Java</option>
+            </select>
+            <textarea id="code" name="code" placeholder="Напишите ваш код здесь..."></textarea>
+            <a class="btn">Отправить</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

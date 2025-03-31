@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}Добро пожаловать{% endblock %}
+{% block content %}
+<div class="welcome-page">
+    <div class="hero-content">
+        <h1 class="animate__animated animate__fadeInDown">Добро пожаловать в Систему Контестов</h1>
+        <p class="hero-slogan animate__animated animate__fadeInUp">
+            Платформа для тестирования и соревнований.
+        </p>
+    </div>
+
+    <!-- Информационные карточки -->
+    <div class="info-cards">
+        <div class="card">
+            <h3>📌 Контесты</h3>
+            <p>Участвуйте в соревнованиях, решайте задачи и улучшайте свои навыки!</p>
+        </div>
+        <div class="card">
+            <h3>📊 Статистика</h3>
+            <p>Следите за своим прогрессом и сравнивайте результаты с другими участниками.</p>
+        </div>
+        <div class="card">
+            <h3>✏️ Создание контестов</h3>
+            <p>Преподаватели могут легко создавать тесты и анализировать результаты!</p>
+        </div>
+    </div>
+
+    <!-- Блок "Топ-участники" -->
+    <section class="top-players">
+        <h2 class="section-title">🏆 Топ-участники</h2>
+        <ul class="leaderboard">
+            <li>🥇 Иван Петров — 980 очков</li>
+            <li>🥈 Анна Смирнова — 950 очков</li>
+            <li>🥉 Алексей Иванов — 920 очков</li>
+            <li>4️⃣ Екатерина Козлова — 890 очков</li>
+            <li>5️⃣ Михаил Сидоров — 860 очков</li>
+        </ul>
+    </section>
+
+
+
+
+
+     <!-- Раздел для студентов -->
+    <section class="user-section">
+        <h2 class="section-title">🎓 Для студентов</h2>
+        <p class="section-description">Проходите тесты, отслеживайте свои результаты и сравнивайте их с другими!</p>
+        <div class="login-section">
+            <a href="{{ url_for('login') }}" class="btn">Вход для участников</a>
+        </div>
+    </section>
+
+    <!-- Раздел для преподавателей -->
+    <section class="user-section">
+        <h2 class="section-title">👨‍🏫 Для преподавателей</h2>
+        <p class="section-description">Создавайте собственные контесты, тестируйте студентов и анализируйте результаты!</p>
+        <div class="login-section">
+            <a href="https://alternative.example.com" target="_blank" class="btn">Вход для администраторов</a>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Подключаем ScrollReveal для плавного появления элементов
+    ScrollReveal().reveal('.section-title', { delay: 200, origin: 'top', distance: '30px' });
+    ScrollReveal().reveal('.section-description', { delay: 400, origin: 'bottom', distance: '30px' });
+    ScrollReveal().reveal('.feature-card', { delay: 600, interval: 200, origin: 'bottom', distance: '50px' });
+    ScrollReveal().reveal('.leaderboard li', { delay: 500, interval: 200, origin: 'right', distance: '40px' });
+</script>
+{% endblock %}
