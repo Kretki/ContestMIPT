@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
+from sql_interface import DataBaseInterface
 
 app = Flask(__name__)
-
+db = DataBaseInterface()
 
 @app.route('/')
 def welcome():
@@ -11,43 +12,49 @@ def welcome():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # Здесь должна быть логика проверки логина и пароля
-        return render_template('contests.html', contests=[
-            {'id': 1, 'name': 'Contest 1'},
-            {'id': 2, 'name': 'Contest 2'},
-            {'id': 3, 'name': 'Contest 3'}
-        ])
+        data = request.json
+        if db.get_user(data['username'], data['password']):
+            response = jsonify({"status": "success", "message": "Login successful"})
+            response.status_code = 200
+            return response, 200
+        else:
+            response = jsonify({"status": "error", "message": "Ошибка авторизации. Неправильные логин или пароль."})
+            response.status_code = 401
+            return response, 401
     return render_template('login.html')
 
 
 @app.route('/contests')
 def contests():
-    contests = [
-        {'id': 1, 'name': 'Contest 1'},
-        {'id': 2, 'name': 'Contest 2'},
-        {'id': 3, 'name': 'Contest 3'}
-    ]
+    contests = []
+    for contest in db.get_all_contests():
+        contests.append({
+            'id': contest[0],
+            'name': contest[1]})
+    print(contests)
     return render_template('contests.html', contests=contests)
 
 
 @app.route('/contest/<int:contest_id>')
 def contest_details(contest_id):
+    db_res = db.get_contest_by_id(contest_id)
     contest = {
-        'id': contest_id,
-        'name': f'Contest {contest_id}',
-        'description': f'Описание контеста {contest_id}. Здесь можно разместить информацию о правилах и времени проведения.'
+        'id': db_res[0],
+        'name': db_res[1],
+        'description': db_res[2]
     }
     return render_template('contest_details.html', contest=contest)
 
 
 @app.route('/contest/<int:contest_id>/problems')
 def contest_problems(contest_id):
-    problems = [
-        {'id': 1, 'title': 'Задача 1'},
-        {'id': 2, 'title': 'Задача 2'},
-        {'id': 3, 'title': 'Задача 3'}
-    ]
-    return render_template('contest_problems.html', contest_id=contest_id, problems=problems)
+    exersises = []
+    for ex in db.get_contest_exs(contest_id):
+        exersises.append({
+            'id': ex[0],
+            'title': 'Задача ' + str(ex[1])
+        })
+    return render_template('contest_problems.html', contest_id=contest_id, problems=exersises)
 
 
 @app.route('/contest/<int:contest_id>/problem/<int:problem_id>', methods=['GET', 'POST'])

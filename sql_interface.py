@@ -51,7 +51,8 @@ class DataBaseInterface:
 
         query = f'''
         CREATE TABLE IF NOT EXISTS {"Exersises"} (
-            contest_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ex_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contest_id INT,
             ex_number INT,
             ex_desc TEXT, 
             ex_type INT,
@@ -94,9 +95,14 @@ class DataBaseInterface:
         self.cursor.execute(query, (ex_id, test_code))
         self.conn.commit()
     
-    def add_contest_ex(self, contest_id, ex_number, ex_desc, ex_type, answer_text):
-        query = "INSERT INTO ContestExs (contest_id, ex_number, ex_desc, ex_type, answer_text) VALUES (?, ?, ?, ?, ?)"
-        self.cursor.execute(query, (contest_id, ex_number, ex_desc, ex_type, answer_text))
+    def add_contest_ex(self, contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text):
+        query = "INSERT INTO Exersises (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        self.cursor.execute(query, (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text))
+        self.conn.commit()
+        query = "SELECT last_insert_rowid() FROM Exersises"
+        self.cursor.execute(query, ())
+        query = "INSERT INTO ContestExs (contest_id, ex_id) VALUES (?, ?)"
+        self.cursor.execute(query, (contest_id, self.cursor.lastrowid))
         self.conn.commit()
 
     def add_contest(self, contest_name, contest_desc):
@@ -120,7 +126,7 @@ class DataBaseInterface:
         return self.cursor.fetchone()
     
     def get_contest_exs(self, contest_id):
-        query = "SELECT * FROM ContestExs WHERE contest_id =?"
+        query = "SELECT ex_id, ex_number FROM Exersises WHERE contest_id =?"
         self.cursor.execute(query, (contest_id,))
         return self.cursor.fetchall()
     
@@ -138,6 +144,11 @@ class DataBaseInterface:
         query = "SELECT * FROM Contest WHERE contest_name =?"
         self.cursor.execute(query, (contest_name,))
         return self.cursor.fetchone()
+    
+    def get_all_contests(self):
+        query = "SELECT contest_id, contest_name FROM Contest"
+        self.cursor.execute(query)
+        return self.cursor.fetchall()
     
     def get_global_stats(self, user_id):
         query = "SELECT * FROM GlobalUserStatistics WHERE user_id =?"
@@ -183,4 +194,15 @@ class DataBaseInterface:
         self.cursor.execute(query, (contest_id, ex_id))
         self.conn.commit()
 
-    
+if __name__ == "__main__":  
+    db = DataBaseInterface()
+    db.add_user("User", "user", "password")
+    db.add_admin("Admin", "admin", "password")
+    db.add_contest("Контест 1", "Это пробный контест под номером 1 для проверки системы")
+    db.add_contest_ex(1, 1, "Напишите программу для вычисления: 3x + 2 = 5", 2, "", "", "")
+    db.add_contest_ex(1, 2, "Напишите программу для вычисления: 2x - 5 = 10", 2, "", "", "")
+    db.add_contest_ex(1, 3, "Напишите программу для вычисления: 5x - 1 = 10", 2, "", "", "")
+    db.add_contest("Контест 2", "Это пробный контест под номером 2 для проверки системы")
+    db.add_contest_ex(2, 1, "Напишите программу для вычисления: 33x + 2 = 5", 2, "", "", "")
+    db.add_contest_ex(2, 2, "Напишите программу для вычисления: 12x - 5 = 10", 2, "", "", "")
+    db.add_contest_ex(2, 3, "Напишите программу для вычисления: 52x - 1 = 10", 2, "", "", "")
