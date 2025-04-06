@@ -14,7 +14,7 @@ def login():
     if request.method == 'POST':
         data = request.json
         if db.get_user(data['username'], data['password']):
-            response = jsonify({"status": "success", "message": "Login successful"})
+            response = jsonify({"status": "success", "message": "Успешный вход"})
             response.status_code = 200
             return response, 200
         else:
@@ -23,8 +23,18 @@ def login():
             return response, 401
     return render_template('login.html')
 
-@app.route('/registration')
+@app.route('/registration', methods=['GET', 'POST'])
 def registration():
+    if request.method == 'POST':
+        data = request.json
+        if db.add_user(data['nickname'], data['username'], data['password']):
+            response = jsonify({"status": "success", "message": "Успешная регистрация"})
+            response.status_code = 200
+            return response, 200
+        else:
+            response = jsonify({"status": "error", "message": "Ошибка регстрации. Пользователь уже существует."})
+            response.status_code = 402
+            return response, 402
     return render_template('registration.html')
 
 @app.route('/contests')

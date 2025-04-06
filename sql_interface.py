@@ -86,9 +86,14 @@ class DataBaseInterface:
         self.conn.commit()
 
     def add_user(self, nickname, login, password):
+        query = "SELECT * FROM User WHERE nickname =? AND login =?"
+        self.cursor.execute(query, (nickname, login))
+        if self.cursor.fetchone():
+            return False
         query = "INSERT INTO User (nickname, login, password) VALUES (?, ?, ?)"
         self.cursor.execute(query, (nickname, login, password))
         self.conn.commit()
+        return True
     
     def add_test(self, ex_id, test_code):
         query = "INSERT INTO Tests (ex_id, test_code) VALUES (?, ?)"
