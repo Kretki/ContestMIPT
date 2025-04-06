@@ -90,8 +90,10 @@ class DataBaseInterface:
         query = f'''
         CREATE TABLE IF NOT EXISTS {"Tests"} (
             unittest_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            ex_id INT,
-            test_code TEXT
+            UniqueID INT,
+            input TEXT,
+            test_code TEXT,
+            output TEXT
         )
         '''
         self.cursor.execute(query)
@@ -118,9 +120,9 @@ class DataBaseInterface:
         self.conn.commit()
         return True
     
-    def add_test(self, ex_id, test_code):
-        query = "INSERT INTO Tests (ex_id, test_code) VALUES (?, ?)"
-        self.cursor.execute(query, (ex_id, test_code))
+    def add_test(self, UniqueID, input, test_code, output):
+        query = "INSERT INTO Tests (UniqueID INT, input TEXT, test_code TEXT, output TEXT) VALUES (?, ?, ?, ?)"
+        self.cursor.execute(query, (UniqueID, input, test_code, output))
         self.conn.commit()
 
     def add_contest_basic_ex(self, contest_id, ex_number, ex_title, ex_desc, ex_options, ex_right_answer, right_answers, wrong_answers): # Переделать, чтобы была отдельная таблица, а не список json
@@ -140,18 +142,10 @@ class DataBaseInterface:
         query = "SELECT last_insert_rowid() FROM CodeExersises"
         self.cursor.execute(query, ())
         query = "INSERT INTO ContestExs (contest_id, ex_id, ex_type) VALUES (?, ?, ?)"
-        self.cursor.execute(query, (contest_id, self.cursor.lastrowid, 2))
+        uniqueId = self.cursor.lastrowid
+        self.cursor.execute(query, (contest_id, uniqueId, 2))
         self.conn.commit()
-    
-    # def add_contest_ex(self, contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text): #ex_type = 1 -> тест, = 2 -> с проверкой unittest
-    #     query = "INSERT INTO Exersises (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text) VALUES (?, ?, ?, ?, ?, ?, ?)" #answer_text - json list of dict, right answer : 1, wrong : 0
-    #     self.cursor.execute(query, (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text))
-    #     self.conn.commit()
-    #     query = "SELECT last_insert_rowid() FROM Exersises"
-    #     self.cursor.execute(query, ())
-    #     query = "INSERT INTO ContestExs (contest_id, ex_id) VALUES (?, ?)"
-    #     self.cursor.execute(query, (contest_id, self.cursor.lastrowid))
-    #     self.conn.commit()
+        return uniqueId
 
     def add_contest(self, contest_name, contest_desc):
         query = '''INSERT INTO Contest (contest_name, contest_desc) VALUES (?, ?)'''
@@ -209,14 +203,10 @@ class DataBaseInterface:
             res = list((exParams[1],) + self.cursor.fetchall()[0])
             res[1] = str(res[1])
             return res
-    # def get_contest_exs(self, contest_id):
-    #     query = "SELECT ex_id, ex_number FROM Exersises WHERE contest_id =?"
-    #     self.cursor.execute(query, (contest_id,))
-    #     return self.cursor.fetchall()
     
-    def get_tests(self, ex_id):
-        query = "SELECT * FROM Tests WHERE ex_id =?"
-        self.cursor.execute(query, (ex_id,))
+    def get_tests(self, UniqueID):
+        query = "SELECT * FROM Tests WHERE UniqueID =?"
+        self.cursor.execute(query, (UniqueID,))
         return self.cursor.fetchall()
     
     def get_contest_by_id(self, contest_id):
@@ -262,11 +252,6 @@ class DataBaseInterface:
         query = "DELETE FROM Administrator WHERE admin_id =?"
         self.cursor.execute(query, (admin_id,))
         self.conn.commit()
-
-    # def delete_ex(self, ex_id):
-    #     query = "DELETE FROM Exersises WHERE contest_id =?"
-    #     self.cursor.execute(query, (ex_id,))
-    #     self.conn.commit()
     
     def delete_test(self, unittest_id):
         query = "DELETE FROM Tests WHERE unittest_id =?"
@@ -284,13 +269,19 @@ if __name__ == "__main__":
     db.add_admin("Admin", "admin", "1234")
     db.add_contest("Контест 1", "Это пробный контест под номером 1 для проверки системы")
     db.add_contest_basic_ex(1, 1, 'Палитра', 'Какой цвет получится при смешении синего и жёлтого?', json.dumps(['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'], ensure_ascii=False).encode('utf8'), 0, 0, 0)
-    db.add_contest_code_ex(1, 2, 'A+B', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    uniqueId = db.add_contest_code_ex(1, 2, 'A+B', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    db.add_test(uniqueId,'2 2', 'print(a+b)', '4')
+    db.add_test(uniqueId,'57 43', 'print(a+b)', '100')
+    db.add_test(uniqueId,'123456789 673243342', 'print(a+b)', '796700131')
     # db.add_contest_ex(1, 1, "Напишите программу для вычисления: 3x + 2 = 5", 2, "", "", "")
     # db.add_contest_ex(1, 2, "Напишите программу для вычисления: 2x - 5 = 10", 2, "", "", "")
     # db.add_contest_ex(1, 3, "Напишите программу для вычисления: 5x - 1 = 10", 2, "", "", "")
     db.add_contest("Контест 2", "Это пробный контест под номером 2 для проверки системы")
     db.add_contest_basic_ex(2, 1, 'Палитра', 'Какой цвет получится при смешении синего и жёлтого?', json.dumps(['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'], ensure_ascii=False).encode('utf8'), 0, 0, 0)
-    db.add_contest_code_ex(2, 2, 'A+C', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    uniqueId = db.add_contest_code_ex(2, 2, 'A+C', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    db.add_test(uniqueId,'2 2', 'print(a+b)', '4')
+    db.add_test(uniqueId,'57 43', 'print(a+b)', '100')
+    db.add_test(uniqueId,'123456789 673243342', 'print(a+b)', '796700131')
     # db.add_contest_ex(2, 1, "Напишите программу для вычисления: 33x + 2 = 5", 2, "", "", "")
     # db.add_contest_ex(2, 2, "Напишите программу для вычисления: 12x - 5 = 10", 2, "", "", "")
     # db.add_contest_ex(2, 3, "Напишите программу для вычисления: 52x - 1 = 10", 2, "", "", "")
