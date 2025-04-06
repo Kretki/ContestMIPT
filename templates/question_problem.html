@@ -1,0 +1,27 @@
+<!-- Основной контейнер задания -->
+  <div class="container task-container">
+    <h1 class="task-title">{{ problem.title }}</h1>
+    <div class="task-description-box">
+      <p class="task-description">{{ problem.description }}</p>
+
+      <!-- Форма с вариантами ответа -->
+      <form method="POST" class="task-form">
+      {% for option in problem.options %}
+        <div class="option-item" style="display: flex; align-items: center; gap: 8px;">
+          <input type="radio" name="option" value="{{ loop.index0 }}" id="option{{ loop.index0 }}"
+                 {% if selected is not none and selected == loop.index0 %}checked{% endif %}>
+          <label for="option{{ loop.index0 }}">{{ option }}</label>
+
+          {% if selected is not none and selected == loop.index0 %}
+            {% if selected == problem.correct %}
+              <span style="color: green; font-size: 20px;">✔</span>
+            {% else %}
+              <span style="color: red; font-size: 20px;">✘</span>
+            {% endif %}
+          {% endif %}
+        </div>
+      {% endfor %}
+      <button type="submit" class="btn">Ответить</button>
+    </form>
+    </div>
+  </div>

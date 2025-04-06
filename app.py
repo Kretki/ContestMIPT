@@ -23,6 +23,9 @@ def login():
             return response, 401
     return render_template('login.html')
 
+@app.route('/registration')
+def registration():
+    return render_template('registration.html')
 
 @app.route('/contests')
 def contests():
@@ -59,13 +62,12 @@ def contest_problems(contest_id):
 
 @app.route('/contest/<int:contest_id>/problem/<int:problem_id>', methods=['GET', 'POST'])
 def contest_problem(contest_id, problem_id):
-    # Если id задачи чётный – это задача с вариантами ответа (MCQ),
-    # если нечётный – задача с написанием кода.
     if problem_id % 2 == 0:
-        problem_type = 'mcq'
+        problem_type = 'question'
         problem = {
             'id': problem_id,
-            'question': 'Какой цвет получится при смешении синего и жёлтого?',
+            'title': f'{problem_id}. Палитра',
+            'description': 'Какой цвет получится при смешении синего и жёлтого?',
             'options': ['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'],
             'correct': 0  # индекс правильного ответа (Зелёный)
         }
@@ -73,18 +75,33 @@ def contest_problem(contest_id, problem_id):
         problem_type = 'code'
         problem = {
             'id': problem_id,
-            'description': 'Напишите функцию, которая возвращает сумму двух чисел.',
-            'compilers': ['Python', 'Java', 'C++']
+            'title': f'{problem_id}. A+B',
+            'time': '2 секунды',
+            'memory': '64 Мб',
+            'input': 'стандартный ввод или input.txt',
+            'output': 'стандартный вывод или output.txt',
+            'description': 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.',
+            'input_description': 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.',
+            'output_description': 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.',
+            'examples': [   {'input': '2 2', 'output': '4'},
+                            {'input': '57 43', 'output': '100'},
+                            {'input': '123456789 673243342', 'output': '796700131'}],
+            'compilers': ['Python', 'C++']
         }
+
+    selected = None
+    is_correct = None
 
     result = None
     if request.method == 'POST':
-        if problem_type == 'mcq':
+        if problem_type == 'question':
             selected = int(request.form.get('option', -1))
-            if selected == problem['correct']:
-                result = 'correct'
-            else:
-                result = 'incorrect'
+            is_correct = (selected == problem['correct'])
+            # selected = int(request.form.get('option', -1))
+            # if selected == problem['correct']:
+            #     result = 'Правильно'
+            # else:
+            #     result = 'Неправильно'
         else:
             code = request.form.get('code')
             compiler = request.form.get('compiler')
@@ -94,6 +111,8 @@ def contest_problem(contest_id, problem_id):
     return render_template('contest_problem.html',
                            contest_id=contest_id,
                            problem=problem,
+                           selected=selected,
+                           is_correct=is_correct,
                            problem_type=problem_type,
                            result=result)
 

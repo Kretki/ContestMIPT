@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block title %}Вход{% endblock %}
+{% block content %}
+<div class="login-page">
+    <h2>Регистрация в системе</h2>
+    <form id="loginForm">
+        <input type="text" id="nickname" name="username" placeholder="Ник" required>
+        <input type="text" id="username" name="username" placeholder="Логин" required>
+        <input type="password" id="password" name="password" placeholder="Пароль" required>
+        <button type="button" class="btn" id="loginButton">Зарегистрироваться</button>
+        <div>
+            <a href="{{ url_for('login') }}">Вход</a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
