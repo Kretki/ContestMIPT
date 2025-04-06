@@ -1,4 +1,5 @@
 import sqlite3
+import json
 
 class DataBaseInterface:
     def __init__(self, db_name="er-database.db"):
@@ -43,22 +44,44 @@ class DataBaseInterface:
         CREATE TABLE IF NOT EXISTS {"ContestExs"} (
             UniqueID INTEGER PRIMARY KEY AUTOINCREMENT,
             contest_id INT,
-            ex_id INT
+            ex_id INT,
+            ex_type INT
         )
         '''
         self.cursor.execute(query)
         self.conn.commit()
 
         query = f'''
-        CREATE TABLE IF NOT EXISTS {"Exersises"} (
+        CREATE TABLE IF NOT EXISTS {"BasicExersises"} (
             ex_id INTEGER PRIMARY KEY AUTOINCREMENT,
             contest_id INT,
             ex_number INT,
-            ex_desc TEXT, 
-            ex_type INT,
+            ex_title TEXT, 
+            ex_desc TEXT,
+            ex_options TEXT,
+            ex_right_answer INT,
             right_answers INT,
-            wrong_answers INT,
-            answer_text TEXT
+            wrong_answers INT
+        )
+        '''
+        self.cursor.execute(query)
+        self.conn.commit()
+
+        query = f'''
+        CREATE TABLE IF NOT EXISTS {"CodeExersises"} (
+            ex_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contest_id INT,
+            ex_number INT,
+            ex_title TEXT, 
+            ex_time TEXT,
+            ex_memory TEXT,
+            ex_input TEXT,
+            ex_output TEXT,
+            ex_description TEXT,
+            ex_input_description TEXT,
+            ex_output_description TEXT,
+            right_answers INT,
+            wrong_answers INT
         )
         '''
         self.cursor.execute(query)
@@ -99,16 +122,36 @@ class DataBaseInterface:
         query = "INSERT INTO Tests (ex_id, test_code) VALUES (?, ?)"
         self.cursor.execute(query, (ex_id, test_code))
         self.conn.commit()
-    
-    def add_contest_ex(self, contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text):
-        query = "INSERT INTO Exersises (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text) VALUES (?, ?, ?, ?, ?, ?, ?)"
-        self.cursor.execute(query, (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text))
+
+    def add_contest_basic_ex(self, contest_id, ex_number, ex_title, ex_desc, ex_options, ex_right_answer, right_answers, wrong_answers): # Переделать, чтобы была отдельная таблица, а не список json
+        query = "INSERT INTO BasicExersises (contest_id, ex_number, ex_title, ex_desc, ex_options, ex_right_answer, right_answers, wrong_answers) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+        self.cursor.execute(query, (contest_id, ex_number, ex_title, ex_desc, ex_options, ex_right_answer, right_answers, wrong_answers))
         self.conn.commit()
-        query = "SELECT last_insert_rowid() FROM Exersises"
+        query = "SELECT last_insert_rowid() FROM BasicExersises"
         self.cursor.execute(query, ())
-        query = "INSERT INTO ContestExs (contest_id, ex_id) VALUES (?, ?)"
-        self.cursor.execute(query, (contest_id, self.cursor.lastrowid))
+        query = "INSERT INTO ContestExs (contest_id, ex_id, ex_type) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (contest_id, self.cursor.lastrowid, 1))
         self.conn.commit()
+    
+    def add_contest_code_ex(self, contest_id, ex_number, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description, right_answers, wrong_answers):
+        query = "INSERT INTO CodeExersises (contest_id, ex_number, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description, right_answers, wrong_answers) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"
+        self.cursor.execute(query, (contest_id, ex_number, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description, right_answers, wrong_answers))
+        self.conn.commit()
+        query = "SELECT last_insert_rowid() FROM CodeExersises"
+        self.cursor.execute(query, ())
+        query = "INSERT INTO ContestExs (contest_id, ex_id, ex_type) VALUES (?, ?, ?)"
+        self.cursor.execute(query, (contest_id, self.cursor.lastrowid, 2))
+        self.conn.commit()
+    
+    # def add_contest_ex(self, contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text): #ex_type = 1 -> тест, = 2 -> с проверкой unittest
+    #     query = "INSERT INTO Exersises (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text) VALUES (?, ?, ?, ?, ?, ?, ?)" #answer_text - json list of dict, right answer : 1, wrong : 0
+    #     self.cursor.execute(query, (contest_id, ex_number, ex_desc, ex_type, right_answers, wrong_answers, answer_text))
+    #     self.conn.commit()
+    #     query = "SELECT last_insert_rowid() FROM Exersises"
+    #     self.cursor.execute(query, ())
+    #     query = "INSERT INTO ContestExs (contest_id, ex_id) VALUES (?, ?)"
+    #     self.cursor.execute(query, (contest_id, self.cursor.lastrowid))
+    #     self.conn.commit()
 
     def add_contest(self, contest_name, contest_desc):
         query = '''INSERT INTO Contest (contest_name, contest_desc) VALUES (?, ?)'''
@@ -131,9 +174,45 @@ class DataBaseInterface:
         return self.cursor.fetchone()
     
     def get_contest_exs(self, contest_id):
-        query = "SELECT ex_id, ex_number FROM Exersises WHERE contest_id =?"
+        query = "SELECT UniqueID, contest_id, ex_id, ex_type FROM ContestExs WHERE contest_id =?"
         self.cursor.execute(query, (contest_id,))
-        return self.cursor.fetchall()
+        exList = self.cursor.fetchall()
+        resList = []
+        for item in exList:
+            if item[3] == 1:
+                query = "SELECT ex_id, ex_number, ex_title FROM BasicExersises WHERE ex_id =?"
+                self.cursor.execute(query, (item[0],))
+                res = self.cursor.fetchone()
+                resList.append((item[0], ". ".join(str(x) for x in res[1:])))
+            elif item[3] == 2:
+                query = "SELECT ex_id, ex_number, ex_title FROM CodeExersises WHERE ex_id =?"
+                self.cursor.execute(query, (item[0],))
+                res = self.cursor.fetchone()
+                resList.append((item[0], ". ".join(str(x) for x in res[1:])))
+        return resList
+
+    def get_ex_text(self, contest_id, unique_id):
+        query = "SELECT ex_id, ex_type FROM ContestExs WHERE contest_id =? AND UniqueID =?"
+        self.cursor.execute(query, (contest_id, unique_id,))
+        exParams = self.cursor.fetchall()[0]
+        if exParams[1] == 1:
+            query = "SELECT ex_number, ex_title, ex_desc, ex_options, ex_right_answer FROM BasicExersises WHERE ex_id =?"
+            self.cursor.execute(query, (exParams[0],))
+            res = list((exParams[1],) + self.cursor.fetchall()[0])
+            res[1] = str(res[1])
+            res[4] = res[4].decode()
+            res[4] = json.loads(res[4])
+            return res
+        else:
+            query = "SELECT ex_number, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description FROM CodeExersises WHERE ex_id =?"
+            self.cursor.execute(query, (exParams[0],))
+            res = list((exParams[1],) + self.cursor.fetchall()[0])
+            res[1] = str(res[1])
+            return res
+    # def get_contest_exs(self, contest_id):
+    #     query = "SELECT ex_id, ex_number FROM Exersises WHERE contest_id =?"
+    #     self.cursor.execute(query, (contest_id,))
+    #     return self.cursor.fetchall()
     
     def get_tests(self, ex_id):
         query = "SELECT * FROM Tests WHERE ex_id =?"
@@ -184,10 +263,10 @@ class DataBaseInterface:
         self.cursor.execute(query, (admin_id,))
         self.conn.commit()
 
-    def delete_ex(self, ex_id):
-        query = "DELETE FROM Exersises WHERE contest_id =?"
-        self.cursor.execute(query, (ex_id,))
-        self.conn.commit()
+    # def delete_ex(self, ex_id):
+    #     query = "DELETE FROM Exersises WHERE contest_id =?"
+    #     self.cursor.execute(query, (ex_id,))
+    #     self.conn.commit()
     
     def delete_test(self, unittest_id):
         query = "DELETE FROM Tests WHERE unittest_id =?"
@@ -201,13 +280,17 @@ class DataBaseInterface:
 
 if __name__ == "__main__":  
     db = DataBaseInterface()
-    db.add_user("User", "user", "password")
-    db.add_admin("Admin", "admin", "password")
+    db.add_user("User", "user", "1234")
+    db.add_admin("Admin", "admin", "1234")
     db.add_contest("Контест 1", "Это пробный контест под номером 1 для проверки системы")
-    db.add_contest_ex(1, 1, "Напишите программу для вычисления: 3x + 2 = 5", 2, "", "", "")
-    db.add_contest_ex(1, 2, "Напишите программу для вычисления: 2x - 5 = 10", 2, "", "", "")
-    db.add_contest_ex(1, 3, "Напишите программу для вычисления: 5x - 1 = 10", 2, "", "", "")
+    db.add_contest_basic_ex(1, 1, 'Палитра', 'Какой цвет получится при смешении синего и жёлтого?', json.dumps(['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'], ensure_ascii=False).encode('utf8'), 0, 0, 0)
+    db.add_contest_code_ex(1, 2, 'A+B', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    # db.add_contest_ex(1, 1, "Напишите программу для вычисления: 3x + 2 = 5", 2, "", "", "")
+    # db.add_contest_ex(1, 2, "Напишите программу для вычисления: 2x - 5 = 10", 2, "", "", "")
+    # db.add_contest_ex(1, 3, "Напишите программу для вычисления: 5x - 1 = 10", 2, "", "", "")
     db.add_contest("Контест 2", "Это пробный контест под номером 2 для проверки системы")
-    db.add_contest_ex(2, 1, "Напишите программу для вычисления: 33x + 2 = 5", 2, "", "", "")
-    db.add_contest_ex(2, 2, "Напишите программу для вычисления: 12x - 5 = 10", 2, "", "", "")
-    db.add_contest_ex(2, 3, "Напишите программу для вычисления: 52x - 1 = 10", 2, "", "", "")
+    db.add_contest_basic_ex(2, 1, 'Палитра', 'Какой цвет получится при смешении синего и жёлтого?', json.dumps(['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'], ensure_ascii=False).encode('utf8'), 0, 0, 0)
+    db.add_contest_code_ex(2, 2, 'A+C', '2 секунды', '64 Мб', 'стандартный ввод или input.txt', 'стандартный вывод или output.txt', 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.', 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.', 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.', 0, 0)
+    # db.add_contest_ex(2, 1, "Напишите программу для вычисления: 33x + 2 = 5", 2, "", "", "")
+    # db.add_contest_ex(2, 2, "Напишите программу для вычисления: 12x - 5 = 10", 2, "", "", "")
+    # db.add_contest_ex(2, 3, "Напишите программу для вычисления: 52x - 1 = 10", 2, "", "", "")

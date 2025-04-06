@@ -65,34 +65,35 @@ def contest_problems(contest_id):
     for ex in db.get_contest_exs(contest_id):
         exersises.append({
             'id': ex[0],
-            'title': 'Задача ' + str(ex[1])
+            'title': ex[1]
         })
     return render_template('contest_problems.html', contest_id=contest_id, problems=exersises)
 
 
 @app.route('/contest/<int:contest_id>/problem/<int:problem_id>', methods=['GET', 'POST'])
 def contest_problem(contest_id, problem_id):
-    if problem_id % 2 == 0:
+    ex_params = db.get_ex_text(contest_id, problem_id)
+    if ex_params[0] == 1:
         problem_type = 'question'
         problem = {
-            'id': problem_id,
-            'title': f'{problem_id}. Палитра',
-            'description': 'Какой цвет получится при смешении синего и жёлтого?',
-            'options': ['Зелёный', 'Фиолетовый', 'Оранжевый', 'Красный'],
-            'correct': 0  # индекс правильного ответа (Зелёный)
+            'id': ex_params[1],
+            'title': '. '.join(ex_params[1:3]),
+            'description': ex_params[3],
+            'options': ex_params[4],
+            'correct': ex_params[5]
         }
     else:
         problem_type = 'code'
         problem = {
-            'id': problem_id,
-            'title': f'{problem_id}. A+B',
-            'time': '2 секунды',
-            'memory': '64 Мб',
-            'input': 'стандартный ввод или input.txt',
-            'output': 'стандартный вывод или output.txt',
-            'description': 'Даны два числа <strong>A</strong> и <strong>B</strong>. Вам нужно вычислить их сумму <strong>A + B</strong>.',
-            'input_description': 'Первая строка входа содержит числа <strong>A</strong> и <strong>B</strong> (-2 * 10⁹ ≤ A, B ≤ 2 * 10⁹), разделенные пробелом.',
-            'output_description': 'В единственной строке выхода выведите сумму чисел <strong>A + B</strong>.',
+            'id':  ex_params[1],
+            'title': '. '.join(ex_params[1:3]),
+            'time': ex_params[3],
+            'memory': ex_params[4],
+            'input': ex_params[5],
+            'output': ex_params[6],
+            'description': ex_params[7],
+            'input_description': ex_params[8],
+            'output_description': ex_params[9],
             'examples': [   {'input': '2 2', 'output': '4'},
                             {'input': '57 43', 'output': '100'},
                             {'input': '123456789 673243342', 'output': '796700131'}],
@@ -104,7 +105,7 @@ def contest_problem(contest_id, problem_id):
 
     result = None
     if request.method == 'POST':
-        if problem_type == 'question':
+        if ex_params[0] == 1:
             selected = int(request.form.get('option', -1))
             is_correct = (selected == problem['correct'])
             # selected = int(request.form.get('option', -1))
