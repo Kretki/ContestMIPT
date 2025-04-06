@@ -83,6 +83,7 @@ def contest_problem(contest_id, problem_id):
             'correct': ex_params[5]
         }
     else:
+        tests = db.get_tests(problem_id)[:3]
         problem_type = 'code'
         problem = {
             'id':  ex_params[1],
@@ -94,10 +95,8 @@ def contest_problem(contest_id, problem_id):
             'description': ex_params[7],
             'input_description': ex_params[8],
             'output_description': ex_params[9],
-            'examples': [   {'input': '2 2', 'output': '4'},
-                            {'input': '57 43', 'output': '100'},
-                            {'input': '123456789 673243342', 'output': '796700131'}],
-            'compilers': ['Python', 'C++']
+            'examples': [{'input': tests[i][0], 'output': tests[i][2]} for i in range(len(tests))],
+            'compilers': ['Python']
         }
 
     selected = None

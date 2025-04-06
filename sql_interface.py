@@ -121,7 +121,7 @@ class DataBaseInterface:
         return True
     
     def add_test(self, UniqueID, input, test_code, output):
-        query = "INSERT INTO Tests (UniqueID INT, input TEXT, test_code TEXT, output TEXT) VALUES (?, ?, ?, ?)"
+        query = "INSERT INTO Tests (UniqueID, input, test_code, output) VALUES (?, ?, ?, ?)"
         self.cursor.execute(query, (UniqueID, input, test_code, output))
         self.conn.commit()
 
@@ -205,7 +205,7 @@ class DataBaseInterface:
             return res
     
     def get_tests(self, UniqueID):
-        query = "SELECT * FROM Tests WHERE UniqueID =?"
+        query = "SELECT input, test_code, output FROM Tests WHERE UniqueID =?"
         self.cursor.execute(query, (UniqueID,))
         return self.cursor.fetchall()
     
