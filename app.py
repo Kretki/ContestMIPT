@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 from sql_interface import DataBaseInterface
+from unittest import test 
 
 app = Flask(__name__)
 db = DataBaseInterface()
@@ -113,10 +114,19 @@ def contest_problem(contest_id, problem_id):
             # else:
             #     result = 'Неправильно'
         else:
-            code = request.form.get('code')
             compiler = request.form.get('compiler')
-            # Здесь можно добавить логику компиляции и проверки кода.
-            result = f'Код отправлен на проверку с использованием {compiler}.'
+            code = request.json['code']
+            all_tests = db.get_tests(problem_id)
+            input = [all_tests[i][0] for i in range(len(all_tests))]
+            output = [all_tests[i][2] for i in range(len(all_tests))]
+            if test(code, compiler, input, output, float(ex_params[3])) == "OK":
+                response = jsonify({"status": "success", "message": "Задание решено верно"})
+                response.status_code = 200
+                return response, 200
+            else:
+                response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
+                response.status_code = 300
+                return response, 300
 
     return render_template('contest_problem.html',
                            contest_id=contest_id,

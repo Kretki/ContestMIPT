@@ -1,3 +1,8 @@
+<head>
+    <div id='contest_id' style="display:none;">{{ contest_id }}</div>
+    <div id='problem_id' style="display:none;">{{ problem_id }}</div>
+</head>
+
 <h1 class="task-title">{{ problem.title }}</h1>
 <div class="task-info-wrapper">
     <table class="task-info">
@@ -45,6 +50,46 @@
             {% endfor %}
         </select>
         <textarea id="code" name="code" placeholder="Напишите ваш код здесь..."></textarea>
-        <a class="btn">Отправить</a>
+        <a class="btn" id="sendButton">Отправить</a>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginButton = document.getElementById('sendButton');
+    loginButton.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const data = {
+            code: document.getElementById('code').value
+        };
+        let contest_id = document.getElementById('contest_id').value;
+        let problem_id = document.getElementById('problem_id').value;
+        console.log(loc);
+        fetch('{{ url_for("/contest/' + contest_id + '/problem/' + problem_id + '") }}', { // How to redirect to it's own page?
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            else {
+                throw new Error('Проблема с сетевым соединением');
+            }
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert("Решение верное");
+            window.location.href = '/contest/' + window.location.href.split("/")[1] + '/problems';
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert(error.message);
+        });
+    });
+});
+</script>
