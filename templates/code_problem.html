@@ -63,10 +63,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const data = {
             code: document.getElementById('code').value
         };
-        let contest_id = document.getElementById('contest_id').value;
-        let problem_id = document.getElementById('problem_id').value;
-        console.log(loc);
-        fetch('{{ url_for("/contest/' + contest_id + '/problem/' + problem_id + '") }}', { // How to redirect to it's own page?
+        
+        fetch(window.location.href, { 
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

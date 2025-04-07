@@ -116,10 +116,11 @@ def contest_problem(contest_id, problem_id):
         else:
             compiler = request.form.get('compiler')
             code = request.json['code']
+            print(code)
             all_tests = db.get_tests(problem_id)
             input = [all_tests[i][0] for i in range(len(all_tests))]
             output = [all_tests[i][2] for i in range(len(all_tests))]
-            if test(code, compiler, input, output, float(ex_params[3])) == "OK":
+            if test(code, compiler, input, output, float(ex_params[3].split(' ')[0])) == "OK":
                 response = jsonify({"status": "success", "message": "Задание решено верно"})
                 response.status_code = 200
                 return response, 200
@@ -133,7 +134,7 @@ def contest_problem(contest_id, problem_id):
                            problem=problem,
                            selected=selected,
                            is_correct=is_correct,
-                           problem_type=problem_type,
+                           problem_type=problem_type, 
                            result=result)
 
 
