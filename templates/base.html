@@ -10,14 +10,8 @@
     <!-- Фоновый яркий градиент для всей страницы -->
     <div class="background-circles"></div>
 
-    <!-- Контейнеры для боковых кружков -->
-    <div class="side-circles left"></div>
-    <div class="side-circles right"></div>
-
     {% block content %}{% endblock %}
 
-    <!-- Подключаем внешний JavaScript, который генерирует кружки -->
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 
     <script src="https://unpkg.com/scrollreveal"></script>
 </body>

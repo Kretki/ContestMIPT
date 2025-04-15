@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from sql_interface import DataBaseInterface
-from unittest import test 
+from unittest import test
+import json
 
 app = Flask(__name__)
 db = DataBaseInterface()
@@ -10,8 +11,8 @@ def welcome():
     return render_template('welcome.html')
 
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
+@app.route('/login_user', methods=['GET', 'POST'])
+def login_user():
     if request.method == 'POST':
         data = request.json
         if db.get_user(data['username'], data['password']):
@@ -22,7 +23,22 @@ def login():
             response = jsonify({"status": "error", "message": "Ошибка авторизации. Неправильные логин или пароль."})
             response.status_code = 401
             return response, 401
-    return render_template('login.html')
+    return render_template('login_user.html')
+
+@app.route('/login_admin', methods=['GET', 'POST'])
+def login_admin():
+    if request.method == 'POST':
+        data = request.json
+        if db.get_admin(data['username'], data['password']):
+            response = jsonify({"status": "success", "message": "Успешный вход"})
+            response.status_code = 200
+            return response, 200
+        else:
+            response = jsonify({"status": "error", "message": "Ошибка авторизации. Неправильные логин или пароль."})
+            response.status_code = 401
+            return response, 401
+    return render_template('login_admin.html')
+
 
 @app.route('/registration', methods=['GET', 'POST'])
 def registration():
@@ -45,8 +61,37 @@ def contests():
         contests.append({
             'id': contest[0],
             'name': contest[1]})
-    print(contests)
     return render_template('contests.html', contests=contests)
+
+@app.route('/contests_admin', methods=['GET', 'POST'])
+def contests_admin():
+    if request.method == 'POST':
+        data = request.json
+        if data['type']=='delete':
+            response = jsonify({"status": "error", "message": "Вставить код"})
+            response.status_code = 402
+            return response, 402
+
+        if data['type']=='add':
+            print('add')
+            db.add_contest(data['name'],data['description'])
+            response = jsonify({"status": "success", "message": "Добавление произошло успешно"})
+            response.status_code = 200
+            return response, 200
+
+
+
+        response = jsonify({"status": "error", "message": "Ошибка"})
+        response.status_code = 402
+        return response, 402
+
+
+    contests = []
+    for contest in db.get_all_contests():
+        contests.append({
+            'id': contest[0],
+            'name': contest[1]})
+    return render_template('contests_admin.html', contests=contests)
 
 
 @app.route('/contest/<int:contest_id>')
@@ -59,6 +104,25 @@ def contest_details(contest_id):
     }
     return render_template('contest_details.html', contest=contest)
 
+@app.route('/contest_admin/<int:contest_id>', methods=['GET', 'POST'])
+def contest_details_admin(contest_id):
+    if request.method == 'POST':
+        data = request.json
+
+        db.update_contest(contest_id,data['name'],data['description'])
+        response = jsonify({"status": "success", "message": "Данные обновлены"})
+        response.status_code = 200
+        return response, 200
+
+
+    db_res = db.get_contest_by_id(contest_id)
+    contest = {
+        'id': db_res[0],
+        'name': db_res[1],
+        'description': db_res[2]
+    }
+    return render_template('contest_details_admin.html', contest=contest)
+
 
 @app.route('/contest/<int:contest_id>/problems')
 def contest_problems(contest_id):
@@ -69,6 +133,40 @@ def contest_problems(contest_id):
             'title': ex[1]
         })
     return render_template('contest_problems.html', contest_id=contest_id, problems=exersises)
+
+@app.route('/contest_admin/<int:contest_id>/problems', methods=['GET', 'POST'])
+def contest_problems_admin(contest_id):
+    if request.method == 'POST':
+        data = request.json
+
+        if data['type']=='add':
+            if data['problem_type']=='question':
+                db.add_contest_basic_ex(contest_id,
+                                        len(db.get_contest_exs(contest_id))+1,
+                                        'Название',
+                                        'Описание',
+                                        json.dumps(['Вариант1'], ensure_ascii=False).encode('utf8'),
+                                        0,
+                                        0,
+                                        0)
+
+                response = jsonify({"status": "success", "message": "Успешное добавление"})
+                response.status_code = 200
+                return response, 200
+
+        response = jsonify({"status": "error", "message": "Ошибка регистрации. Пользователь уже существует."})
+        response.status_code = 402
+        return response, 402
+
+
+
+    exersises = []
+    for ex in db.get_contest_exs(contest_id):
+        exersises.append({
+            'id': ex[0],
+            'title': ex[1]
+        })
+    return render_template('contest_problems_admin.html', contest_id=contest_id, problems=exersises)
 
 
 @app.route('/contest/<int:contest_id>/problem/<int:problem_id>', methods=['GET', 'POST'])
@@ -116,7 +214,6 @@ def contest_problem(contest_id, problem_id):
         else:
             compiler = request.form.get('compiler')
             code = request.json['code']
-            print(code)
             all_tests = db.get_tests(problem_id)
             input = [all_tests[i][0] for i in range(len(all_tests))]
             output = [all_tests[i][2] for i in range(len(all_tests))]
@@ -129,13 +226,79 @@ def contest_problem(contest_id, problem_id):
                 response.status_code = 300
                 return response, 300
 
-    return render_template('contest_problem.html',
+    return render_template('contest_problem_admin.html',
                            contest_id=contest_id,
                            problem=problem,
                            selected=selected,
                            is_correct=is_correct,
                            problem_type=problem_type, 
                            result=result)
+
+@app.route('/contest_admin/<int:contest_id>/problem/<int:problem_id>', methods=['GET', 'POST'])
+def contest_problem_admin(contest_id, problem_id):
+    ex_params = db.get_ex_text(contest_id, problem_id)
+    if ex_params[0] == 1:
+        problem_type = 'question'
+        problem = {
+            'id': ex_params[1],
+            'title': '. '.join(ex_params[1:3]),
+            'description': ex_params[3],
+            'options': ex_params[4],
+            'correct': ex_params[5]
+        }
+    else:
+        tests = db.get_tests(problem_id)[:3]
+        problem_type = 'code'
+        problem = {
+            'id':  ex_params[1],
+            'title': '. '.join(ex_params[1:3]),
+            'time': ex_params[3],
+            'memory': ex_params[4],
+            'input': ex_params[5],
+            'output': ex_params[6],
+            'description': ex_params[7],
+            'input_description': ex_params[8],
+            'output_description': ex_params[9],
+            'examples': [{'input': tests[i][0], 'output': tests[i][2]} for i in range(len(tests))],
+            'compilers': ['Python']
+        }
+
+    selected = None
+    is_correct = None
+
+    result = None
+    if request.method == 'POST':
+        if ex_params[0] == 1:
+            selected = int(request.form.get('option', -1))
+            is_correct = (selected == problem['correct'])
+            # selected = int(request.form.get('option', -1))
+            # if selected == problem['correct']:
+            #     result = 'Правильно'
+            # else:
+            #     result = 'Неправильно'
+        else:
+            compiler = request.form.get('compiler')
+            code = request.json['code']
+            all_tests = db.get_tests(problem_id)
+            input = [all_tests[i][0] for i in range(len(all_tests))]
+            output = [all_tests[i][2] for i in range(len(all_tests))]
+            if test(code, compiler, input, output, float(ex_params[3].split(' ')[0])) == "OK":
+                response = jsonify({"status": "success", "message": "Задание решено верно"})
+                response.status_code = 200
+                return response, 200
+            else:
+                response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
+                response.status_code = 300
+                return response, 300
+
+    return render_template('contest_problem_admin.html',
+                           contest_id=contest_id,
+                           problem=problem,
+                           selected=selected,
+                           is_correct=is_correct,
+                           problem_type=problem_type,
+                           result=result)
+
 
 
 if __name__ == '__main__':

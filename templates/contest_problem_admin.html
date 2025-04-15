@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container task-container">
+    {% if problem_type == 'question' %}
+        {% include 'question_problem_admin.html' %}
+    {% else %}
+        {% include 'code_problem_admin.html' %}
+    {% endif %}
+</div>
+{% endblock %}

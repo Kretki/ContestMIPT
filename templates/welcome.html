@@ -30,14 +30,14 @@
         <section class="user-section">
             <h2 class="section-title">🎓 Для студентов</h2>
             <p class="section-description">Проходите тесты, отслеживайте свои результаты и сравнивайте их с другими!</p>
-            <a href="{{ url_for('login') }}" class="btn">Вход для участников</a>
+            <a href="{{ url_for('login_user') }}" class="btn">Вход для участников</a>
         </section>
 
         <!-- Раздел для преподавателей -->
         <section class="user-section">
             <h2 class="section-title">👨‍🏫 Для преподавателей</h2>
             <p class="section-description">Создавайте собственные контесты, тестируйте студентов и анализируйте результаты!</p>
-            <a href="https://alternative.example.com" target="_blank" class="btn">Вход для администраторов</a>
+            <a href="{{ url_for('login_admin') }}" class="btn">Вход для администраторов</a>
         </section>
     </div>
 

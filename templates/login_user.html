@@ -1,0 +1,10 @@
+{% extends 'base_login.html' %}
+{% block h2 %}Вход для пользователей{% endblock %}
+{% block loginForm %}
+<div>
+    <a href="{{ url_for('registration') }}">Зарегистрироваться</a>
+</div>
+{% endblock %}
+
+{% block login_url %}{{ url_for('login_user') }}{% endblock %}
+{% block redirect_url %}{{ url_for('contests') }}{% endblock %}

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Задачи контеста{% endblock %}
+{% block content %}
+<div class="problems-page">
+    <h2>Задачи контеста</h2>
+    {% for problem in problems %}
+        <div class="problem-item">
+            <a href="{{ url_for('contest_problem_admin', contest_id=contest_id, problem_id=problem.id) }}">{{ problem.title }}</a>
+        </div>
+    {% endfor %}
+    <button type="button" class="btn" id="addQuestionProblemButton">Добавить задание с вопросом</button>
+    <button type="button" class="btn" id="addCodeProblemButton">Добавить задание с кодом</button>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const addQuestionProblemButton = document.getElementById('addQuestionProblemButton');
+    addQuestionProblemButton.addEventListener('click', function() {
+
+        // Показать диалог подтверждения
+        const confirmAdd = confirm("Вы уверены, что хотите добавить задание с вопросом?");
+
+        if (confirmAdd){
+            const data = {
+                type: 'add',
+                problem_type: 'question'
+            };
+
+            fetch('/contest_admin/{{ contest_id }}/problems', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status =='success') {
+                    alert('Изменения сохранены!');
+                    location.reload();
+                } else {
+                    alert('Ошибка при сохранении изменений.');
+                }
+            })
+            .catch((error) => {
+                console.error('Ошибка:', error);
+                alert(error.message);
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

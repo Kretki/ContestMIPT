@@ -1,0 +1,93 @@
+<head>
+    <div id='contest_id' style="display:none;">{{ contest_id }}</div>
+    <div id='problem_id' style="display:none;">{{ problem_id }}</div>
+</head>
+
+<h1 class="task-title">{{ problem.title }}</h1>
+<div class="task-info-wrapper">
+    <table class="task-info">
+        <tr><td>Ограничение времени</td><td>{{ problem.time }}</td></tr>
+        <tr><td>Ограничение памяти</td><td>{{ problem.memory }}</td></tr>
+        <tr><td>Ввод</td><td>{{ problem.input }}</td></tr>
+        <tr><td>Вывод</td><td>{{ problem.output }}</td></tr>
+    </table>
+</div>
+
+<div class="task-description-box">
+    <h2>Описание задачи</h2>
+    <p> {{ problem.description| safe }}</p>
+</div>
+
+<div class="task-description-box">
+    <h2>Формат ввода</h2>
+    <p>{{ problem.input_description| safe }}</p>
+</div>
+
+<div class="task-description-box">
+    <h2>Формат вывода</h2>
+    <p>{{ problem.output_description| safe }}</p>
+</div>
+
+<h2>Примеры</h2>
+<div class="examples-grid">
+    {% for example in problem.examples %}
+        <div class="example">
+            <pre class="input">Ввод
+{{ example.input }}</pre>
+            <pre class="output">Вывод
+{{ example.output }}</pre>
+        </div>
+    {% endfor %}
+</div>
+
+<h2>Отправка решения</h2>
+<div class="task-description-box">
+    <form class="code-submit-form">
+        <label for="language">Выберите язык</label>
+        <select id="language" name="language">
+            {% for lang in problem.compilers %}
+                <option value="{{ lang }}">{{ lang }}</option>
+            {% endfor %}
+        </select>
+        <textarea id="code" name="code" placeholder="Напишите ваш код здесь..."></textarea>
+        <a class="btn" id="sendButton">Отправить</a>
+    </form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const loginButton = document.getElementById('sendButton');
+    loginButton.addEventListener('click', function(e) {
+        e.preventDefault();
+
+        const data = {
+            code: document.getElementById('code').value
+        };
+        
+        fetch(window.location.href, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            else {
+                throw new Error('Проблема с сетевым соединением');
+            }
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert("Решение верное");
+            window.location.href = '/contest/' + window.location.href.split("/")[1] + '/problems';
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert(error.message);
+        });
+    });
+});
+</script>

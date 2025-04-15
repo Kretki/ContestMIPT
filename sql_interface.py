@@ -175,12 +175,12 @@ class DataBaseInterface:
         for item in exList:
             if item[3] == 1:
                 query = "SELECT ex_id, ex_number, ex_title FROM BasicExersises WHERE ex_id =?"
-                self.cursor.execute(query, (item[0],))
+                self.cursor.execute(query, (item[2],))
                 res = self.cursor.fetchone()
                 resList.append((item[0], ". ".join(str(x) for x in res[1:])))
             elif item[3] == 2:
                 query = "SELECT ex_id, ex_number, ex_title FROM CodeExersises WHERE ex_id =?"
-                self.cursor.execute(query, (item[0],))
+                self.cursor.execute(query, (item[2],))
                 res = self.cursor.fetchone()
                 resList.append((item[0], ". ".join(str(x) for x in res[1:])))
         return resList
@@ -239,7 +239,7 @@ class DataBaseInterface:
         query = "UPDATE Contest SET contest_name =?, contest_desc =? WHERE contest_id =?"
         self.cursor.execute(query, (contest_name, contest_desc, contest_id))
         self.conn.commit()
-    
+
     def delete_user(self, user_id):
         query = "DELETE FROM User WHERE user_id =?"
         self.cursor.execute(query, (user_id,))

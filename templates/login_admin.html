@@ -1,0 +1,4 @@
+{% extends 'base_login.html' %}
+{% block h2 %}Вход для администраторов{% endblock %}
+{% block login_url %} {{ url_for("login_admin") }} {% endblock %}
+{% block redirect_url %}{{ url_for('contests_admin') }}{% endblock %}

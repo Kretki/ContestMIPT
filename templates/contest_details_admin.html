@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}{{ contest.name }}{% endblock %}
+{% block content %}
+<div class="contest-details">
+    <h2 contenteditable="true" id="contestName" >{{ contest.name }}</h2>
+    <p contenteditable="true" id="contestDescription" >{{ contest.description }}</p>
+    <div>
+        <button type="button" class="btn"  id="saveChanges" >Сохранить изменения</button>
+    </div>
+    <a href="{{ url_for('contest_problems_admin', contest_id=contest.id) }}" class="btn">Содержимое контеста</a>
+    <a href="javascript:history.back()" class="btn back-btn">Назад</a>
+
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const saveButton = document.getElementById('saveChanges');
+    const contestNameElement = document.getElementById('contestName');
+    const contestDescriptionElement = document.getElementById('contestDescription');
+
+    const contestId = "{{ contest.id }}";
+
+    saveButton.addEventListener('click', function() {
+        const updatedName = contestNameElement.textContent;
+        const updatedDescription = contestDescriptionElement.textContent;
+
+        const data = {
+            name: updatedName,
+            description: updatedDescription
+        };
+
+        fetch(`/contest_admin/${contestId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status =='success') {
+                alert('Изменения сохранены!');
+                location.reload();
+            } else {
+                alert('Ошибка при сохранении изменений.');
+            }
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert(error.message);
+        });
+    });
+});
+</script>
+{% endblock %}

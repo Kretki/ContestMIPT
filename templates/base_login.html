@@ -2,15 +2,12 @@
 {% block title %}Вход{% endblock %}
 {% block content %}
 <div class="login-page">
-    <h2>Регистрация в системе</h2>
+    <h2>{% block h2 %}Вход{% endblock %}</h2>
     <form id="loginForm">
-        <input type="text" id="nickname" name="username" placeholder="Ник" required>
         <input type="text" id="username" name="username" placeholder="Логин" required>
         <input type="password" id="password" name="password" placeholder="Пароль" required>
-        <button type="button" class="btn" id="loginButton">Зарегистрироваться</button>
-        <div>
-            <a href="{{ url_for('login_user') }}">Вход</a>
-        </div>
+        <button type="button" class="btn" id="loginButton">Войти</button>
+        {% block loginForm %}{% endblock %}
     </form>
 </div>
 
@@ -20,17 +17,20 @@ document.addEventListener('DOMContentLoaded', function() {
     loginButton.addEventListener('click', function(e) {
         e.preventDefault();
 
-        const nickname = document.getElementById('nickname').value;
+        const loginUrl = "{% block login_url %}{{ url_for('base_user') }}{% endblock %}";
+        const redirectUrl = "{% block redirect_url %}{{ url_for('base_redirect') }}{% endblock %}";
+
+
+
         const username = document.getElementById('username').value;
         const password = document.getElementById('password').value;
 
         const data = {
-            nickname: nickname,
             username: username,
             password: password
         };
 
-        fetch('{{ url_for("registration") }}', {
+        fetch(loginUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -41,6 +41,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (response.ok) {
                 return response.json();
             }
+            else if(response.status === 401) {
+                throw new Error("Ошибка при вводе логина, или пароля");
+            }
             else {
                 throw new Error('Проблема с сетевым соединением');
             }
@@ -48,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Success:', data);
             alert("Успешный вход");
-            window.location.href = '{{ url_for("contests") }}';
+            window.location.href = redirectUrl;
         })
         .catch((error) => {
             console.error('Ошибка:', error);
@@ -58,5 +61,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {% endblock %}
-    
-    
+

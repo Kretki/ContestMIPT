@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Список контестов{% endblock %}
+{% block content %}
+<div class="contests-page">
+    <h2>Список контестов</h2>
+    <ul class="contest-list">
+        {% for contest in contests %}
+            <li>
+                <a href="{{ url_for('contest_details_admin', contest_id=contest.id) }}">{{ contest.name }}</a>
+                <span class="delete-contest" data-contest-id="{{ contest.id }}" style="cursor: pointer;">&#10006;</span>
+            </li>
+
+        {% endfor %}
+    </ul>
+    <button type="button" class="btn" id="addContestButton">Добавить контест</button>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-contest');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const contestId = this.getAttribute('data-contest-id');
+
+            // Показать диалог подтверждения
+            const confirmDelete = confirm("Вы уверены, что хотите удалить этот контест?");
+
+            if (confirmDelete) {
+                 const data = {
+                    type: 'delete',
+                    id: contestId,
+                };
+
+                fetch(`/contests_admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status =='success') {
+                        alert('Контекст удалён');
+                        location.reload();
+                    } else {
+                        alert('Ошибка при удалении');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Ошибка:', error);
+                    alert(error.message);
+                });
+            }
+        });
+    });
+
+    const addContestButton = document.getElementById('addContestButton');
+    addContestButton.addEventListener('click', function() {
+        const Name = 'Пустой контест';
+        const Description = 'Добавьте описание';
+
+        // Показать диалог подтверждения
+           const confirmAdd = confirm("Вы уверены, что хотите добавить контест?");
+        if(confirmAdd){
+            const data = {
+                type: 'add',
+                name: Name,
+                description: Description
+            };
+
+            fetch(`/contests_admin`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status =='success') {
+                    alert('Изменения сохранены!');
+                    location.reload();
+                } else {
+                    alert('Ошибка при сохранении изменений.');
+                }
+            })
+            .catch((error) => {
+                console.error('Ошибка:', error);
+                alert(error.message);
+            });
+        }
+    });
+});
+</script>
+{% endblock %}
