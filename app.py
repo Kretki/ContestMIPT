@@ -220,7 +220,7 @@ def contest_problem(contest_id, problem_id):
                 response.status_code = 300
                 return response, 300
 
-    return render_template('contest_problem_admin.html',
+    return render_template('contest_problem.html',
                            contest_id=contest_id,
                            problem=problem,
                            selected=selected,
