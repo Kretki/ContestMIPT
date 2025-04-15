@@ -192,7 +192,7 @@ class DataBaseInterface:
         if exParams[1] == 1:
             query = "SELECT ex_number, ex_title, ex_desc, ex_options, ex_right_answer FROM BasicExersises WHERE ex_id =?"
             self.cursor.execute(query, (exParams[0],))
-            res = list((exParams[1],) + self.cursor.fetchall()[0])
+            res = list((exParams[1],) + self.cursor.fetchall()[0] + (exParams[0],))
             res[1] = str(res[1])
             res[4] = res[4].decode()
             res[4] = json.loads(res[4])
@@ -200,7 +200,7 @@ class DataBaseInterface:
         else:
             query = "SELECT ex_number, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description FROM CodeExersises WHERE ex_id =?"
             self.cursor.execute(query, (exParams[0],))
-            res = list((exParams[1],) + self.cursor.fetchall()[0])
+            res = list((exParams[1],) + self.cursor.fetchall()[0] + (exParams[0],))
             res[1] = str(res[1])
             return res
     
@@ -238,6 +238,11 @@ class DataBaseInterface:
     def update_contest(self, contest_id, contest_name, contest_desc):
         query = "UPDATE Contest SET contest_name =?, contest_desc =? WHERE contest_id =?"
         self.cursor.execute(query, (contest_name, contest_desc, contest_id))
+        self.conn.commit()
+
+    def update_contest_basic_ex(self, ex_id, ex_title, ex_desc, ex_options, ex_right_answer, right_answers, wrong_answers): # Переделать, чтобы была отдельная таблица, а не список json
+        query = "UPDATE BasicExersises SET ex_title=?, ex_desc=?, ex_options=?, ex_right_answer=?, right_answers=?, wrong_answers=? WHERE ex_id=?"
+        self.cursor.execute(query, (ex_title, ex_desc, json.dumps(ex_options, ensure_ascii=False).encode('utf8'), ex_right_answer, right_answers, wrong_answers, ex_id))
         self.conn.commit()
 
     def delete_user(self, user_id):

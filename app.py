@@ -154,12 +154,6 @@ def contest_problems_admin(contest_id):
                 response.status_code = 200
                 return response, 200
 
-        response = jsonify({"status": "error", "message": "Ошибка регистрации. Пользователь уже существует."})
-        response.status_code = 402
-        return response, 402
-
-
-
     exersises = []
     for ex in db.get_contest_exs(contest_id):
         exersises.append({
@@ -268,9 +262,17 @@ def contest_problem_admin(contest_id, problem_id):
 
     result = None
     if request.method == 'POST':
+        data = request.json
         if ex_params[0] == 1:
-            selected = int(request.form.get('option', -1))
-            is_correct = (selected == problem['correct'])
+            if data['problem_type']=='question':
+                print(ex_params[-1])
+                db.update_contest_basic_ex(ex_params[-1], '.'.join(data['name'].split('.')[1:]), data['description'], data['items'], data['index'], 0, 0)
+                response = jsonify({"status": "success", "message": "Успешное добавление"})
+                response.status_code = 200
+                return response, 200
+
+            # selected = int(request.form.get('option', -1))
+            # is_correct = (selected == problem['correct'])
             # selected = int(request.form.get('option', -1))
             # if selected == problem['correct']:
             #     result = 'Правильно'
@@ -290,15 +292,14 @@ def contest_problem_admin(contest_id, problem_id):
                 response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
                 response.status_code = 300
                 return response, 300
-
-    return render_template('contest_problem_admin.html',
+    else:
+        return render_template('contest_problem_admin.html',
                            contest_id=contest_id,
                            problem=problem,
                            selected=selected,
                            is_correct=is_correct,
                            problem_type=problem_type,
                            result=result)
-
 
 
 if __name__ == '__main__':
