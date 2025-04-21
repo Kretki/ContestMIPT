@@ -48,5 +48,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+document.addEventListener('DOMContentLoaded', function() {
+const addQuestionProblemButton = document.getElementById('addCodeProblemButton');
+addQuestionProblemButton.addEventListener('click', function() {
+
+    // Показать диалог подтверждения
+    const confirmAdd = confirm("Вы уверены, что хотите добавить задание с кодом?");
+
+    if (confirmAdd){
+        const data = {
+            type: 'add',
+            problem_type: 'code'
+        };
+
+        fetch('/contest_admin/{{ contest_id }}/problems', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status =='success') {
+                alert('Изменения сохранены!');
+                location.reload();
+            } else {
+                alert('Ошибка при сохранении изменений.');
+            }
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert(error.message);
+        });
+    }
+});
+});
 </script>
 {% endblock %}

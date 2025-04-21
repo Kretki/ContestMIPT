@@ -7,7 +7,7 @@
         {% for contest in contests %}
             <li>
                 <a href="{{ url_for('contest_details_admin', contest_id=contest.id) }}">{{ contest.name }}</a>
-                <span class="delete-contest" data-contest-id="{{ contest.id }}" style="cursor: pointer;">&#10006;</span>
+                <span class="delete-contest" data-contest-id="{{ contest.id }}" style="cursor: pointer;">✘</span>
             </li>
 
         {% endfor %}

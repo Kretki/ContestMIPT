@@ -10,26 +10,31 @@
     <div class="task-form" id="taskForm">
       <!-- Container for dynamically managed option items -->
       <div id="optionsContainer">
-        {% for option in problem.options %}
-          <div class="option-item" style="display: flex; align-items: center; gap: 8px;">
-            <input type="radio" name="option" value="{{ loop.index0 }}" id="option{{ loop.index0 }}"
-                   {% if selected is not none and selected == loop.index0 %}checked{% endif %}>
-            <!-- The label is made editable -->
-            <span class="option-label" contenteditable="true" data-index="{{ loop.index0 }}">{{ option }}</span>
-            <!-- Button to delete the option -->
-            <button type="button" class="mark-correct" onclick="markCorrect(this)">✔</button>
-            <button type="button" class="delete-option" onclick="deleteOption(this)">✖</button>
-            
-            {% if selected is not none and selected == loop.index0 %}
-              {% if selected == problem.correct %}
-                <span style="color: green; font-size: 20px;">✔</span>
-              {% else %}
-                <span style="color: red; font-size: 20px;">✘</span>
-              {% endif %}
-            {% endif %}
-          </div>
-        {% endfor %}
+  {% for option in problem.options %}
+    <div class="option-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+      <!-- Левая часть: сама опция -->
+      <div class="option-item" style="display: flex; align-items: center; gap: 8px; flex: 1;">
+        <input type="radio" name="option" value="{{ loop.index0 }}" id="option{{ loop.index0 }}"
+               {% if selected is not none and selected == loop.index0 %}checked{% endif %}>
+
+        <span class="option-label" contenteditable="true" data-index="{{ loop.index0 }}">{{ option }}</span>
+
+        <span class="mark-correct" onclick="markCorrect(this)" style="cursor: pointer;">✔</span>
+
+        {% if selected is not none and selected == loop.index0 %}
+          {% if selected == problem.correct %}
+            <span style="color: green; font-size: 20px;">✔</span>
+          {% else %}
+            <span style="color: red; font-size: 20px;">✘</span>
+          {% endif %}
+        {% endif %}
       </div>
+
+      <!-- Правая часть: кнопка удаления -->
+      <span class="delete-answer-variant" onclick="deleteOption(this)" style="cursor: pointer; font-size: 18px;">✘</span>
+    </div>
+  {% endfor %}
+</div>
       
       <!-- Button to add a new answer variant -->
       <button type="button" class="btn" id="addOptionButton">Добавить новое поле</button>
@@ -44,46 +49,59 @@
 let optionCount = {{ problem.options|length }};
 const optionsContainer = document.getElementById('optionsContainer');
 
-// Add new option when "Add answer variant" is clicked
-document.getElementById('addOptionButton').addEventListener('click', function() {
-  const div = document.createElement('div');
-  div.className = 'option-item';
-  div.style.display = 'flex';
-  div.style.alignItems = 'center';
-  div.style.gap = '8px';
+document.getElementById('addOptionButton').addEventListener('click', function () {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'option-wrapper';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'space-between';
 
-  // Radio button with unique value and id
+  const optionDiv = document.createElement('div');
+  optionDiv.className = 'option-item';
+  optionDiv.style.display = 'flex';
+  optionDiv.style.alignItems = 'center';
+  optionDiv.style.gap = '8px';
+  optionDiv.style.flex = '1';
+
   const input = document.createElement('input');
   input.type = 'radio';
   input.name = 'option';
   input.value = optionCount;
   input.id = 'option' + optionCount;
-  div.appendChild(input);
+  optionDiv.appendChild(input);
 
-  // Editable option text
   const span = document.createElement('span');
   span.className = 'option-label';
   span.contentEditable = 'true';
   span.textContent = 'Новый вариант';
   span.dataset.index = optionCount;
-  div.appendChild(span);
+  optionDiv.appendChild(span);
 
-  const tickBtn = document.createElement('button');
-  tickBtn.type = 'button';
+  const tickBtn = document.createElement('span');
   tickBtn.className = 'mark-correct';
   tickBtn.textContent = '✔';
-  tickBtn.onclick = function() { markCorrect(tickBtn); };
-  div.appendChild(tickBtn);
+  tickBtn.style.cursor = 'pointer';
+  tickBtn.onclick = function () {
+    markCorrect(tickBtn);
+  };
+  optionDiv.appendChild(tickBtn);
 
-  // Delete button for the option
-  const deleteBtn = document.createElement('button');
-  deleteBtn.type = 'button';
-  deleteBtn.className = 'delete-option';
-  deleteBtn.textContent = '✖';
-  deleteBtn.onclick = function() { deleteOption(deleteBtn); };
-  div.appendChild(deleteBtn);
+  // Добавляем внутренний блок в обёртку
+  wrapper.appendChild(optionDiv);
 
-  optionsContainer.appendChild(div);
+  // Кнопка ✘ (удалить)
+  const deleteBtn = document.createElement('span');
+  deleteBtn.className = 'delete-answer-variant';
+  deleteBtn.textContent = '✘';
+  deleteBtn.style.cursor = 'pointer';
+  deleteBtn.style.fontSize = '18px';
+  deleteBtn.onclick = function () {
+    deleteOption(deleteBtn);
+  };
+  wrapper.appendChild(deleteBtn);
+
+  // Добавляем всю конструкцию
+  optionsContainer.appendChild(wrapper);
   optionCount++;
 });
 
@@ -100,10 +118,11 @@ function markCorrect(btn) {
     item.classList.remove('correct');
     // If the tick button is missing, re-add it before the delete button.
     if (!item.querySelector('.mark-correct')) {
-      const tickBtn = document.createElement('button');
-      tickBtn.type = 'button';
+      const tickBtn = document.createElement('span');
+      tickBtn.type = 'span';
       tickBtn.className = 'mark-correct';
       tickBtn.textContent = '✔';
+      tickBtn.style.cursor = 'pointer';
       tickBtn.onclick = function() { markCorrect(tickBtn); };
       // Insert the tick button before the delete button.
       const deleteBtn = item.querySelector('.delete-option');

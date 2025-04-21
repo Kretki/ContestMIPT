@@ -435,15 +435,22 @@ form {
     gap: 30px;
     width: 100%;
 }
+.example-wrapper {
+    display: flex;
+    align-items: center; /* Выравнивает по вертикали по центру */
+    justify-content: space-between;
+    width: 100%;
+}
 
 .example {
+    flex: 1;
     background: var(--backgournd-dark-color);
     padding: 20px 40px;
     border-radius: 20px;
     text-align: left;
     box-shadow: 0px 5px 15px var(--shadow-dark-color);
-    width: 100%;
 }
+
 
 pre.input, pre.output {
     background: white;

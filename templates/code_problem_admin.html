@@ -3,91 +3,204 @@
     <div id='problem_id' style="display:none;">{{ problem_id }}</div>
 </head>
 
-<h1 class="task-title">{{ problem.title }}</h1>
+<h1 class="task-title" contenteditable="true">{{ problem.title }}</h1>
 <div class="task-info-wrapper">
     <table class="task-info">
-        <tr><td>Ограничение времени</td><td>{{ problem.time }}</td></tr>
-        <tr><td>Ограничение памяти</td><td>{{ problem.memory }}</td></tr>
-        <tr><td>Ввод</td><td>{{ problem.input }}</td></tr>
-        <tr><td>Вывод</td><td>{{ problem.output }}</td></tr>
+        <tr><td>Ограничение времени</td><td contenteditable="true">{{ problem.time }}</td></tr>
+        <tr><td>Ограничение памяти</td><td contenteditable="true">{{ problem.memory }}</td></tr>
+        <tr><td>Ввод</td><td contenteditable="true">{{ problem.input }}</td></tr>
+        <tr><td>Вывод</td><td contenteditable="true">{{ problem.output }}</td></tr>
     </table>
 </div>
 
 <div class="task-description-box">
     <h2>Описание задачи</h2>
-    <p> {{ problem.description| safe }}</p>
+    <p contenteditable="true"> {{ problem.description| safe }}</p>
 </div>
 
 <div class="task-description-box">
     <h2>Формат ввода</h2>
-    <p>{{ problem.input_description| safe }}</p>
+    <p contenteditable="true">{{ problem.input_description| safe }}</p>
 </div>
 
 <div class="task-description-box">
     <h2>Формат вывода</h2>
-    <p>{{ problem.output_description| safe }}</p>
+    <p contenteditable="true">{{ problem.output_description| safe }}</p>
 </div>
 
 <h2>Примеры</h2>
 <div class="examples-grid">
-    {% for example in problem.examples %}
-        <div class="example">
-            <pre class="input">Ввод
-{{ example.input }}</pre>
-            <pre class="output">Вывод
-{{ example.output }}</pre>
-        </div>
-    {% endfor %}
+  <!-- Генерация описанная ниже -->
 </div>
 
-<h2>Отправка решения</h2>
-<div class="task-description-box">
-    <form class="code-submit-form">
-        <label for="language">Выберите язык</label>
-        <select id="language" name="language">
-            {% for lang in problem.compilers %}
-                <option value="{{ lang }}">{{ lang }}</option>
-            {% endfor %}
-        </select>
-        <textarea id="code" name="code" placeholder="Напишите ваш код здесь..."></textarea>
-        <a class="btn" id="sendButton">Отправить</a>
-    </form>
-</div>
+<button type="button" class="btn" id="addExampleButton">Добавить пример</button>
+<button type="button" class="btn" id="submitButton">Подтвердить изменения</button>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const loginButton = document.getElementById('sendButton');
-    loginButton.addEventListener('click', function(e) {
-        e.preventDefault();
+document.getElementById('addExampleButton').addEventListener('click', function () {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'example-wrapper';
+  wrapper.style.display = 'flex';
+  wrapper.style.alignItems = 'center';
+  wrapper.style.justifyContent = 'space-between';
+  wrapper.style.width = '100%';
 
-        const data = {
-            code: document.getElementById('code').value
-        };
-        
-        fetch(window.location.href, { 
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            }
-            else {
-                throw new Error('Проблема с сетевым соединением');
-            }
-        })
-        .then(data => {
-            console.log('Success:', data);
-            alert("Решение верное");
-            window.location.href = '/contest/' + window.location.href.split("/")[1] + '/problems';
-        })
-        .catch((error) => {
-            console.error('Ошибка:', error);
-            alert(error.message);
-        });
-    });
+  // Внутренний блок example
+  const exampleDiv = document.createElement('div');
+  exampleDiv.className = 'example';
+<!--  exampleDiv.contentEditable = 'true';-->
+<!--  exampleDiv.contentEditable = 'true';-->
+  exampleDiv.style.flex = '1';
+  exampleDiv.style.background = 'var(--backgournd-dark-color)';
+  exampleDiv.style.padding = '20px 40px';
+  exampleDiv.style.borderRadius = '20px';
+  exampleDiv.style.textAlign = 'left';
+  exampleDiv.style.boxShadow = '0px 5px 15px var(--shadow-dark-color)';
+  exampleDiv.style.width = '100%';
+
+   // --- inputPre ---
+  const inputPre = document.createElement('pre');
+  inputPre.className = 'input';
+
+  const inputLabel = document.createElement('span');
+  inputLabel.textContent = 'Ввод\n';
+
+  const inputContent = document.createElement('div');
+  inputContent.className = 'input-content';
+  inputContent.contentEditable = 'true';
+  inputContent.style.whiteSpace = 'pre-wrap';
+  inputContent.style.outline = 'none';
+
+  inputPre.appendChild(inputLabel);
+  inputPre.appendChild(inputContent);
+  exampleDiv.appendChild(inputPre);
+
+  // Пример вывода
+  const outputPre = document.createElement('pre');
+  outputPre.className = 'output';
+
+  const outputLabel = document.createElement('span');
+  outputLabel.textContent = 'Вывод\n';
+
+  const outputContent = document.createElement('div');
+  outputContent.className = 'output-content';
+  outputContent.contentEditable = 'true';
+  outputContent.style.whiteSpace = 'pre-wrap';
+  outputContent.style.outline = 'none';
+
+  outputPre.appendChild(outputLabel);
+  outputPre.appendChild(outputContent);
+  exampleDiv.appendChild(outputPre);
+
+  // Добавляем example в wrapper
+  wrapper.appendChild(exampleDiv);
+
+  // Кнопка ✘ (удалить example)
+  const deleteBtn = document.createElement('span');
+  deleteBtn.className = 'delete-answer-variant';
+  deleteBtn.textContent = '✘';
+  deleteBtn.style.cursor = 'pointer';
+  deleteBtn.style.fontSize = '18px';
+  deleteBtn.style.marginLeft = '16px';
+  deleteBtn.onclick = function () {
+    deleteOption(deleteBtn); // Предположим, это удаляет wrapper
+  };
+
+  wrapper.appendChild(deleteBtn);
+
+  // Добавляем всё в контейнер с примерами
+  document.querySelector('.examples-grid').appendChild(wrapper);
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  const examples = {{ problem.examples | tojson }}; // Получаем примеры из вашего шаблона
+
+  // Добавление каждого примера на страницу
+  examples.forEach(function (example) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'example-wrapper';
+    wrapper.style.display = 'flex';
+    wrapper.style.alignItems = 'center';
+    wrapper.style.justifyContent = 'space-between';
+    wrapper.style.width = '100%';
+
+    // Внутренний блок example
+    const exampleDiv = document.createElement('div');
+    exampleDiv.className = 'example';
+    exampleDiv.style.flex = '1';
+    exampleDiv.style.background = 'var(--backgournd-dark-color)';
+    exampleDiv.style.padding = '20px 40px';
+    exampleDiv.style.borderRadius = '20px';
+    exampleDiv.style.textAlign = 'left';
+    exampleDiv.style.boxShadow = '0px 5px 15px var(--shadow-dark-color)';
+    exampleDiv.style.width = '100%';
+
+    // --- inputPre ---
+    const inputPre = document.createElement('pre');
+    inputPre.className = 'input';
+
+    const inputLabel = document.createElement('span');
+    inputLabel.textContent = 'Ввод\n';
+
+    const inputContent = document.createElement('div');
+    inputContent.className = 'input-content';
+    inputContent.contentEditable = 'true';
+    inputContent.style.whiteSpace = 'pre-wrap';
+    inputContent.style.outline = 'none';
+    inputContent.textContent = example.input;  // Динамическое заполнение
+
+    inputPre.appendChild(inputLabel);
+    inputPre.appendChild(inputContent);
+    exampleDiv.appendChild(inputPre);
+
+    // Пример вывода
+    const outputPre = document.createElement('pre');
+    outputPre.className = 'output';
+
+    const outputLabel = document.createElement('span');
+    outputLabel.textContent = 'Вывод\n';
+
+    const outputContent = document.createElement('div');
+    outputContent.className = 'output-content';
+    outputContent.contentEditable = 'true';
+    outputContent.style.whiteSpace = 'pre-wrap';
+    outputContent.style.outline = 'none';
+    outputContent.textContent = example.output;  // Динамическое заполнение
+
+    outputPre.appendChild(outputLabel);
+    outputPre.appendChild(outputContent);
+    exampleDiv.appendChild(outputPre);
+
+    // Добавляем example в wrapper
+    wrapper.appendChild(exampleDiv);
+
+    // Кнопка ✘ (удалить example)
+    const deleteBtn = document.createElement('span');
+    deleteBtn.className = 'delete-answer-variant';
+    deleteBtn.textContent = '✘';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.fontSize = '18px';
+    deleteBtn.style.marginLeft = '16px';
+    deleteBtn.onclick = function () {
+      deleteOption(deleteBtn); // Предположим, это удаляет wrapper
+    };
+
+    wrapper.appendChild(deleteBtn);
+
+    // Добавляем всё в контейнер с примерами
+    document.querySelector('.examples-grid').appendChild(wrapper);
+  });
+});
+
+
+
+function deleteOption(button) {
+  const optionDiv = button.parentNode;
+  optionDiv.parentNode.removeChild(optionDiv);
+}
+
+document.getElementById('submitButton').addEventListener('click', function() {
+    // Дописать
+});
+
 </script>
