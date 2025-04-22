@@ -157,6 +157,11 @@ class DataBaseInterface:
         self.cursor.execute(query, (nickname, login, password))
         self.conn.commit()
     
+    def add_test(self, UniqueID, input, test_code, output):
+        query = "INSERT INTO Tests (UniqueID, input, test_code, output) VALUES (?, ?, ?, ?)"
+        self.cursor.execute(query, (UniqueID, input, test_code, output))
+        self.conn.commit()
+    
     def get_user(self, username, password):
         query = "SELECT * FROM User WHERE login =? AND password =?"
         self.cursor.execute(query, (username, password))
@@ -244,6 +249,11 @@ class DataBaseInterface:
         query = "UPDATE BasicExersises SET ex_title=?, ex_desc=?, ex_options=?, ex_right_answer=?, right_answers=?, wrong_answers=? WHERE ex_id=?"
         self.cursor.execute(query, (ex_title, ex_desc, json.dumps(ex_options, ensure_ascii=False).encode('utf8'), ex_right_answer, right_answers, wrong_answers, ex_id))
         self.conn.commit()
+    
+    def update_contest_code_ex(self, ex_id, ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description, right_answers, wrong_answers):
+        query = "UPDATE CodeExersises SET ex_title=?, ex_time=?, ex_memory=?, ex_input=?, ex_output=?, ex_description=?, ex_input_description=?, ex_output_description=?, right_answers=?, wrong_answers=? WHERE ex_id=?"
+        self.cursor.execute(query, (ex_title, ex_time, ex_memory, ex_input, ex_output, ex_description, ex_input_description, ex_output_description, right_answers, wrong_answers, ex_id))
+        self.conn.commit()
 
     def delete_user(self, user_id):
         query = "DELETE FROM User WHERE user_id =?"
@@ -266,6 +276,20 @@ class DataBaseInterface:
     def delete_contest_ex(self, contest_id, ex_id):
         query = "DELETE FROM ContestExs WHERE contest_id =? AND ex_id =?"
         self.cursor.execute(query, (contest_id, ex_id))
+        self.conn.commit()
+    
+    def delete_contest(self, contest_id):
+        query = "DELETE FROM Contest WHERE contest_id =?"
+        self.cursor.execute(query, (contest_id,))
+        self.conn.commit()
+        query = "DELETE FROM ContestExs WHERE contest_id =?"
+        self.cursor.execute(query, (contest_id,))
+        self.conn.commit()
+        query = "DELETE FROM BasicExersises WHERE contest_id =?"
+        self.cursor.execute(query, (contest_id,))
+        self.conn.commit()
+        query = "DELETE FROM CodeExersises WHERE contest_id =?"
+        self.cursor.execute(query, (contest_id,))
         self.conn.commit()
 
 if __name__ == "__main__":  

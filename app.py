@@ -68,9 +68,10 @@ def contests_admin():
     if request.method == 'POST':
         data = request.json
         if data['type']=='delete':
-            response = jsonify({"status": "error", "message": "Вставить код"})
-            response.status_code = 402
-            return response, 402
+            db.delete_contest(data['id'])
+            response = jsonify({"status": "success", "message": "Удаление прошло успешно"})
+            response.status_code = 200
+            return response, 200
 
         if data['type']=='add':
             print('add')
@@ -78,8 +79,6 @@ def contests_admin():
             response = jsonify({"status": "success", "message": "Добавление произошло успешно"})
             response.status_code = 200
             return response, 200
-
-
 
         response = jsonify({"status": "error", "message": "Ошибка"})
         response.status_code = 402
@@ -138,7 +137,7 @@ def contest_problems(contest_id):
 def contest_problems_admin(contest_id):
     if request.method == 'POST':
         data = request.json
-
+        
         if data['type']=='add':
             if data['problem_type']=='question':
                 db.add_contest_basic_ex(contest_id,
@@ -149,6 +148,23 @@ def contest_problems_admin(contest_id):
                                         0,
                                         0,
                                         0)
+
+                response = jsonify({"status": "success", "message": "Успешное добавление"})
+                response.status_code = 200
+                return response, 200
+            else:
+                db.add_contest_code_ex(contest_id,
+                                       len(db.get_contest_exs(contest_id))+1,
+                                       'Название',
+                                       'Время',
+                                       'Память',
+                                       'Входные данные',
+                                       'Выходные данные',
+                                       'Описание',
+                                       'Описание входных данных',
+                                       'Описание выходных данных',
+                                       0,
+                                       0)
 
                 response = jsonify({"status": "success", "message": "Успешное добавление"})
                 response.status_code = 200
@@ -279,19 +295,13 @@ def contest_problem_admin(contest_id, problem_id):
             # else:
             #     result = 'Неправильно'
         else:
-            compiler = request.form.get('compiler')
-            code = request.json['code']
-            all_tests = db.get_tests(problem_id)
-            input = [all_tests[i][0] for i in range(len(all_tests))]
-            output = [all_tests[i][2] for i in range(len(all_tests))]
-            if test(code, compiler, input, output, float(ex_params[3].split(' ')[0])) == "OK":
-                response = jsonify({"status": "success", "message": "Задание решено верно"})
-                response.status_code = 200
-                return response, 200
-            else:
-                response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
-                response.status_code = 300
-                return response, 300
+            print(data)
+            db.update_contest_code_ex(ex_params[-1], data['title'], data['time'], data['memory'], data['input'], data['output'], data['desc'], data['input_desc'], data['output_desc'], 0, 0)
+            for i in range(len(data['unittest'])):
+                db.add_test(problem_id, data['unittest'][i]['input'], "", data['unittest'][i]['output'])
+            response = jsonify({"status": "success", "message": "Успешное добавление"})
+            response.status_code = 200
+            return response, 200
     else:
         return render_template('contest_problem_admin.html',
                            contest_id=contest_id,

@@ -3,29 +3,29 @@
     <div id='problem_id' style="display:none;">{{ problem_id }}</div>
 </head>
 
-<h1 class="task-title" contenteditable="true">{{ problem.title }}</h1>
+<h1 class="task-title" contenteditable="true" id="title-id">{{ problem.title }}</h1>
 <div class="task-info-wrapper">
     <table class="task-info">
-        <tr><td>Ограничение времени</td><td contenteditable="true">{{ problem.time }}</td></tr>
-        <tr><td>Ограничение памяти</td><td contenteditable="true">{{ problem.memory }}</td></tr>
-        <tr><td>Ввод</td><td contenteditable="true">{{ problem.input }}</td></tr>
-        <tr><td>Вывод</td><td contenteditable="true">{{ problem.output }}</td></tr>
+        <tr><td>Ограничение времени</td><td contenteditable="true" id="time-id">{{ problem.time }}</td></tr>
+        <tr><td>Ограничение памяти</td><td contenteditable="true" id="memory-id">{{ problem.memory }}</td></tr>
+        <tr><td>Ввод</td><td contenteditable="true" id="input-id">{{ problem.input }}</td></tr>
+        <tr><td>Вывод</td><td contenteditable="true" id="output-id">{{ problem.output }}</td></tr>
     </table>
 </div>
 
 <div class="task-description-box">
     <h2>Описание задачи</h2>
-    <p contenteditable="true"> {{ problem.description| safe }}</p>
+    <p contenteditable="true" id="desc-id"> {{ problem.description| safe }}</p>
 </div>
 
 <div class="task-description-box">
     <h2>Формат ввода</h2>
-    <p contenteditable="true">{{ problem.input_description| safe }}</p>
+    <p contenteditable="true" id="input-desc-id">{{ problem.input_description| safe }}</p>
 </div>
 
 <div class="task-description-box">
     <h2>Формат вывода</h2>
-    <p contenteditable="true">{{ problem.output_description| safe }}</p>
+    <p contenteditable="true" id="output-desc-id">{{ problem.output_description| safe }}</p>
 </div>
 
 <h2>Примеры</h2>
@@ -48,8 +48,8 @@ document.getElementById('addExampleButton').addEventListener('click', function (
   // Внутренний блок example
   const exampleDiv = document.createElement('div');
   exampleDiv.className = 'example';
-<!--  exampleDiv.contentEditable = 'true';-->
-<!--  exampleDiv.contentEditable = 'true';-->
+// <!--  exampleDiv.contentEditable = 'true';-->
+// <!--  exampleDiv.contentEditable = 'true';-->
   exampleDiv.style.flex = '1';
   exampleDiv.style.background = 'var(--backgournd-dark-color)';
   exampleDiv.style.padding = '20px 40px';
@@ -200,7 +200,47 @@ function deleteOption(button) {
 }
 
 document.getElementById('submitButton').addEventListener('click', function() {
-    // Дописать
+    const inputs = Array.from(document.querySelectorAll('.input-content'));
+    const outputs = Array.from(document.querySelectorAll('.output-content'));
+    let unittests =  inputs.map((inputEl, i) => ({
+      input: inputEl.textContent.trim(),
+      output: outputs[i].textContent.trim()
+    }));
+    const data = {
+          title: document.getElementById('title-id').textContent,
+          time: document.getElementById('time-id').textContent,
+          memory: document.getElementById('memory-id').textContent,
+          input: document.getElementById('input-id').textContent,
+          output: document.getElementById('output-id').textContent,
+          desc: document.getElementById('desc-id').textContent,
+          input_desc: document.getElementById('input-desc-id').textContent,
+          output_desc: document.getElementById('output-desc-id').textContent,
+          unittest: unittests,
+        };
+        
+        fetch(window.location.href, { 
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            }
+            else {
+                throw new Error('Проблема с сетевым соединением');
+            }
+        })
+        .then(data => {
+            console.log('Success:', data);
+            alert("Изменения загружены");
+        })
+        .catch((error) => {
+            console.error('Ошибка:', error);
+            alert(error.message);
+        });
 });
 
 </script>
