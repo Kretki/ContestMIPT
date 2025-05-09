@@ -1,12 +1,12 @@
-{% extends 'base.html' %}
+{% extends 'base_with_user_profile.html' %}
 {% block title %}Выбор контеста{% endblock %}
 {% block content %}
 <div class="contests-page">
     <h2>Выберите контест</h2>
-    <ul class="contest-list">
-        {% for contest in contests %}
-            <li><a href="{{ url_for('contest_details', contest_id=contest.id) }}">{{ contest.name }}</a></li>
-        {% endfor %}
-    </ul>
+    {% for contest in contests %}
+    <div class="problem-item">
+        <a href="{{ url_for('contest_details', contest_id=contest.id) }}">{{ contest.name }}</a>
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}

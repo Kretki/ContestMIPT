@@ -3,15 +3,18 @@
 {% block content %}
 <div class="contests-page">
     <h2>Список контестов</h2>
-    <ul class="contest-list">
-        {% for contest in contests %}
-            <li>
-                <a href="{{ url_for('contest_details_admin', contest_id=contest.id) }}">{{ contest.name }}</a>
-                <span class="delete-contest" data-contest-id="{{ contest.id }}" style="cursor: pointer;">✘</span>
-            </li>
 
-        {% endfor %}
-    </ul>
+    {% for contest in contests %}
+        <div class="option-wrapper" style="display: flex; align-items: center; justify-content: space-between;">
+
+            <div class="problem-item">
+                <a href="{{ url_for('contest_details_admin', contest_id=contest.id) }}">{{ contest.name }}</a>
+            </div>
+            <span class="delete-contest" data-contest-id="{{ contest.id }}" style="cursor: pointer; font-size: 18px;">✘</span>
+
+        </div>
+    {% endfor %}
+
     <button type="button" class="btn" id="addContestButton">Добавить контест</button>
 </div>
 

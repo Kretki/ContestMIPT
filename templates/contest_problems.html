@@ -3,12 +3,54 @@
 {% block content %}
 <div class="problems-page">
     <h2>Задачи контеста</h2>
-    <div class="problems-list">
-        {% for problem in problems %}
-            <div class="problem-item">
-                <a href="{{ url_for('contest_problem', contest_id=contest_id, problem_id=problem.id) }}">{{ problem.title }}</a>
-            </div>
-        {% endfor %}
-    </div>
+    {% for problem in problems %}
+        <div class="problem-item">
+            <a href="{{ url_for('contest_problem',
+             contest_id=contest_id,
+             problem_id=problem.id) }}">{{ problem.title }}</a>
+        </div>
+    {% endfor %}
+
+    <button type="button" class="btn" id="FinishButton">Завершить контест</button>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+
+    const contestId = "{{ contest_id }}";
+    const FinishButton = document.getElementById('FinishButton');
+    FinishButton.addEventListener('click', function(e) {
+        e.preventDefault();
+
+         const confirmFinish = confirm("Вы уверены, что хотите закончить этот контест?");
+
+        if (confirmFinish) {
+             const data = {
+                contest_id: contestId,
+            };
+
+            fetch(window.location.href, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(data => {
+<!--                if (data.status === 'success') {-->
+                    alert('Контест завершён');
+                    // Перенаправление
+                    window.location.href = "/user_profile";
+<!--                } else {-->
+<!--                    alert('Ошибка при завершении контеста');-->
+<!--                }-->
+            })
+        }
+    });
+});
+</script>
+
+
+
+
 {% endblock %}

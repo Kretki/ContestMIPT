@@ -1,10 +1,43 @@
 {% extends 'base.html' %}
 {% block content %}
-<div class="container task-container">
-    {% if problem_type == 'question' %}
-        {% include 'question_problem.html' %}
-    {% else %}
-        {% include 'code_problem.html' %}
-    {% endif %}
+<div class="task-page-wrapper">
+    <div class="container ">
+        {% if problem_type == 'question' %}
+            {% include 'question_problem.html' %}
+        {% else %}
+            {% include 'code_problem.html' %}
+        {% endif %}
+
+        <div style="padding: 20px 40px;margin: 15px auto;width: 100%;">
+            <div class="problem-item">
+            <a href="{{ url_for('contest_problems', contest_id=contest_id) }}" style="font-size: 20px;">Вернутся к списку заданий</a>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="task-sidebar">
+        {% if next_problem_id is not none %}
+            <a href="{{ url_for('contest_problem',
+                         contest_id=contest_id,
+                         problem_id=next_problem_id) }}" class="btn-next">→</a>
+        {% endif %}
+    </div>
+
+    <div class="task-sidebar">
+        {% if prev_problem_id is not none %}
+            <a href="{{ url_for('contest_problem',
+                         contest_id=contest_id,
+                         problem_id=prev_problem_id) }}" class="btn-prev">←</a>
+        {% endif %}
+    </div>
+
 </div>
+
+
+
+
+
 {% endblock %}

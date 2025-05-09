@@ -8,7 +8,7 @@
       <form method="POST" class="task-form">
       {% for option in problem.options %}
         <div class="option-item" style="display: flex; align-items: center; gap: 8px;">
-          <input type="radio" name="option" value="{{ loop.index0 }}" id="option{{ loop.index0 }}"
+          <input type="radio" name="option" {% if problem.user_answ != -1 %}disabled{% endif %} value="{{ loop.index0 }}" id="option{{ loop.index0 }}"
                  {% if selected is not none and selected == loop.index0 %}checked{% endif %}>
           <label for="option{{ loop.index0 }}">{{ option }}</label>
 
@@ -19,9 +19,18 @@
               <span style="color: red; font-size: 20px;">✘</span>
             {% endif %}
           {% endif %}
+
+          {% if problem.user_answ != -1 and problem.user_answ == loop.index0 %}
+            {% if problem.user_answ == problem.correct %}
+              <span style="color: green; font-size: 20px;">✔</span>
+            {% else %}
+              <span style="color: red; font-size: 20px;">✘</span>
+            {% endif %}
+          {% endif %}
+
         </div>
       {% endfor %}
-      <button type="submit" class="btn">Ответить</button>
+      <button type="submit" class="btn" {% if problem.user_answ != -1 %}disabled{% endif %}>Ответить</button>
     </form>
     </div>
   </div>

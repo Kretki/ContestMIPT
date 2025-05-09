@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Система Контестов{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+</head>
+<body>
+    <!-- Фоновый яркий градиент для всей страницы -->
+    <div class="background-circles"></div>
+
+    <nav style="display: flex; justify-content: center; gap: 200px; padding: 8px 0 4px 0; border-bottom: 1px solid #ccc;">
+        <a href="/contests" class="nav-icon">
+            <img src="{{ url_for('static', filename='icons/file.png') }}" alt="Контесты" style="width: 40px; height: 40px;"/>
+        </a>
+        <a href="/user_profile" class="nav-icon">
+            <img src="{{ url_for('static', filename='icons/profile3.png') }}" alt="Личный кабинет" style="width: 30px; height: 40px;"/>
+        </a>
+    </nav>
+
+
+    {% block content %}{% endblock %}
+
+
+    <script src="https://unpkg.com/scrollreveal"></script>
+</body>
+</html>
