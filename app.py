@@ -143,6 +143,7 @@ def contest_details(contest_id):
         redirect_url = data.get('redirect_url') or url_for('contest_problems', contest_id=contest_id)
         contest_id = int(redirect_url.split('/')[2])
         db.set_user_active_contest(contest_id, int(flask.session['user_data'][0]))
+        db.start_contest_stats(int(flask.session['user_data'][0]))
         return jsonify({'redirect_url': url_for('contest_problems', contest_id=contest_id)}), 200
     
     else:
@@ -251,9 +252,10 @@ def contest_problem(contest_id, problem_id):
     if 'user_data' not in flask.session:
         return flask.redirect(url_for('login_user'))
 
-
     ex_params = db.get_ex_text(contest_id, problem_id)
     if ex_params[0] == 1:
+        if not db.get_stats_contest_ex(int(flask.session['user_data'][0]), ex_params[-1]):
+            return flask.redirect(url_for('contest_problems', contest_id=contest_id))
         problem_type = 'question'
         # todo: Относится к нижнему. Если есть ответ, то user_answ = индексу ответа
         problem = {
@@ -278,7 +280,7 @@ def contest_problem(contest_id, problem_id):
             'input_description': ex_params[8],
             'output_description': ex_params[9],
             'examples': [{'input': tests[i][0], 'output': tests[i][2]} for i in range(len(tests))],
-            'compilers': ['Python']
+            'compilers': ['Python', 'C++', 'C']
         }
 
     selected = None
@@ -289,12 +291,10 @@ def contest_problem(contest_id, problem_id):
         if ex_params[0] == 1:
             selected = int(request.form.get('option', -1))
             is_correct = (selected == problem['correct'])
-            right_answer, wrong_answer, _ = db.get_global_stats(int(flask.session['user_data'][0]))
+            res = 0
             if is_correct:
-                right_answer += 1
-            else:
-                wrong_answer += 1
-            db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
+                res = 1
+            db.update_global_stats(int(flask.session['user_data'][0]), ex_params[-1], res)
             # todo: Добавить сохранение ответов. Чтобы пользователь не мог дважды ответить на вопрос
 
             # selected = int(request.form.get('option', -1))
@@ -309,17 +309,16 @@ def contest_problem(contest_id, problem_id):
             input = [all_tests[i][0] for i in range(len(all_tests))]
             output = [all_tests[i][2] for i in range(len(all_tests))]
             res = test(code, compiler, input, output, float(ex_params[3].split(' ')[0]))
-            right_answer, wrong_answer, _ = db.get_global_stats(int(flask.session['user_data'][0]))
+            correct = 0
             if res == "OK":
                 response = jsonify({"status": "success", "message": "Задание решено верно"})
-                right_answer += 1
-                db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
+                correct = 1
+                db.update_global_stats(int(flask.session['user_data'][0]), ex_params[-1], correct)
                 response.status_code = 200
                 return response, 200
             else:
-                response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
-                wrong_answer += 1
-                db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
+                response = jsonify({"status": "error", "message": f"Ошибка при проходе тестирования - {res}"})
+                db.update_global_stats(int(flask.session['user_data'][0]), ex_params[-1], correct)
                 response.status_code = 300
                 return response, 300
 

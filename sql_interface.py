@@ -23,9 +23,9 @@ class DataBaseInterface:
         CREATE TABLE IF NOT EXISTS {"GlobalUserStatistics"} (
             run_id INTEGER PRIMARY KEY AUTOINCREMENT,
             active_contest_id INT,
-            right_answer INT,
-            wrong_answer INT,
-            user_id INT
+            answer INT,
+            user_id INT,
+            ex_id INT
         )
         '''
         self.cursor.execute(query)
@@ -246,20 +246,20 @@ class DataBaseInterface:
         query = "DELETE FROM GlobalUserStatistics WHERE active_contest_id =? AND user_id=?"
         self.cursor.execute(query, (active_contest_id, user_id,))
         self.conn.commit()
-        query = "INSERT INTO GlobalUserStatistics (right_answer, wrong_answer, user_id, active_contest_id) VALUES (?,?,?,?)"
-        self.cursor.execute(query, (0, 0, user_id, active_contest_id))
-        self.conn.commit()
     
-    def get_global_stats_numbers(self, user_id):
+    def get_stats_contest_ex(self, user_id, ex_id):
         active_contest_id = self.get_user_active_contest(user_id)[0]
-        query = "SELECT right_answer, wrong_answer WHERE user_id=? AND active_contest_id=?"
-        self.cursor.execute(query, (user_id, active_contest_id))
-        return self.cursor.fetchone()
+        query = "SELECT answer FROM GlobalUserStatistics WHERE user_id=? AND active_contest_id=? AND ex_id=?"
+        self.cursor.execute(query, (user_id, active_contest_id, ex_id))
+        return len(self.cursor.fetchall()) == 0
         
-    def update_global_stats(self, user_id, right_answer, wrong_answer):
+    def update_global_stats(self, user_id, ex_id, answer):
         active_contest_id = self.get_user_active_contest(user_id)[0]
-        query = '''UPDATE GlobalUserStatistics SET right_answer =?, wrong_answer =? WHERE user_id=? AND active_contest_id=?'''
-        self.cursor.execute(query, (right_answer, wrong_answer, user_id, active_contest_id))
+        query = "DELETE FROM GlobalUserStatistics WHERE active_contest_id =? AND user_id=? AND ex_id=?"
+        self.cursor.execute(query, (active_contest_id, user_id, ex_id,))
+        self.conn.commit()
+        query = "INSERT INTO GlobalUserStatistics (user_id, active_contest_id, answer, ex_id) VALUES (?,?,?,?)"
+        self.cursor.execute(query, (user_id, active_contest_id, answer, ex_id))
         self.conn.commit()
 
     def update_contest(self, contest_id, contest_name, contest_desc):

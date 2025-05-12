@@ -77,7 +77,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 return response.json();
             }
             else {
-                throw new Error('Проблема с сетевым соединением');
+                response.json().then(data => {
+                    alert(data.message)
+                });
+                throw new Error("Error")
             }
         })
         .then(data => {
@@ -87,7 +90,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch((error) => {
             console.error('Ошибка:', error);
-            alert(error.message);
         });
     });
 });
