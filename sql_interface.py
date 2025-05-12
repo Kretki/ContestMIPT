@@ -179,6 +179,44 @@ class DataBaseInterface:
         self.cursor.execute(query, (username, password))
         return self.cursor.fetchone()
     
+    def get_user_stats(self, user_id):
+        query = "SELECT * FROM GlobalUserStatistics"
+        self.cursor.execute(query)
+        all_exs = self.cursor.fetchall()
+        contests = []
+        scores = []
+        users = []
+        places = []
+        for (_, contest_id, correct, _, ex_id) in all_exs:
+            if self.get_contest_by_id(contest_id)[1] not in contests:
+                query = "SELECT COUNT(*) FROM ContestExs WHERE contest_id=?"
+                self.cursor.execute(query, (contest_id,))
+                count_all_exs = self.cursor.fetchone()[0]
+                query = "SELECT SUM(answer) FROM GlobalUserStatistics WHERE active_contest_id=? AND user_id=?"
+                self.cursor.execute(query, (contest_id, user_id))
+                count_all_correct = self.cursor.fetchone()[0]
+                query = "SELECT COUNT(*) FROM (SELECT user_id FROM GlobalUserStatistics WHERE active_contest_id=? GROUP BY user_id)"
+                self.cursor.execute(query, (contest_id,))
+                count_users = self.cursor.fetchone()[0]
+                query = '''
+                    SELECT ROW_NUMBER() OVER(ORDER BY score DESC) 
+                    FROM 
+                    (
+                        SELECT user_id, SUM(answer) AS score 
+                        FROM GlobalUserStatistics 
+                        WHERE active_contest_id=? 
+                        GROUP BY user_id 
+                    ) WHERE user_id=?
+                    
+                '''
+                self.cursor.execute(query, (contest_id, user_id))
+                places_users = self.cursor.fetchone()[0]
+                contests.append(self.get_contest_by_id(contest_id)[1])
+                scores.append(f"{count_all_correct}/{count_all_exs}")
+                users.append(count_users)
+                places.append(places_users)
+        return contests, scores, users, places
+    
     def get_contest_exs(self, contest_id):
         query = "SELECT UniqueID, contest_id, ex_id, ex_type FROM ContestExs WHERE contest_id =?"
         self.cursor.execute(query, (contest_id,))
@@ -340,6 +378,3 @@ def basic_behaviour():
 if __name__ == "__main__":  
     basic_behaviour()
     # db = DataBaseInterface()
-    # query = "SELECT * FROM User"
-    # db.cursor.execute(query)
-    # print(db.cursor.fetchall())

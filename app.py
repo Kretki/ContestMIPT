@@ -60,9 +60,9 @@ def user_profile():
         return flask.redirect(url_for('login_user'))
 
     #todo: Добавить динамическое отображение результатов контестов
-
     user_data = flask.session['user_data']
-    return render_template('user_profile.html', user_nickname=user_data[1],user_login=user_data[2])
+    contests, scores, users, places = db.get_user_stats(int(user_data[0]))
+    return render_template('user_profile.html', user_nickname=user_data[1],user_login=user_data[2], contest_list=contests, score_list=scores, participants_list=users, place_list=places)
 
 
 

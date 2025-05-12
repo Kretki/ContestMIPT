@@ -54,7 +54,7 @@ def single_test(lang: str, inp: str, expected: str, tl: float) -> str:
     except subprocess.TimeoutExpired:
         os.remove(in_file)
         return "TL"
-
+      
     os.remove(in_file)
 
     if proc.returncode != 0:
@@ -76,7 +76,6 @@ def test(prog: str, lang: str, inputs: list, outputs: list, tl: float) -> str:
     status = make_executable(prog, lang)
     if status != "OK":
         return status
-
     for idx, (inp, expected) in enumerate(zip(inputs, outputs), start=1):
         status = single_test(lang, inp, expected, tl)
         if status != "OK":
