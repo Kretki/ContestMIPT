@@ -4,8 +4,35 @@
 <div class="contest-details">
     <h2>{{ contest.name }}</h2>
     <p>{{ contest.description }}</p>
-    <a href="{{ url_for('contest_problems', contest_id=contest.id) }}" class="btn">Начать контест</a>
+    <a data-target-url="{{ url_for('contest_problems', contest_id=contest.id) }}" class="btn" id="start-btn">Начать контест</a>
     <a href="javascript:history.back()" class="btn back-btn">Назад</a>
 
 </div>
+<script>
+const startBtn = document.getElementById('start-btn');
+
+startBtn.addEventListener('click', function(event) {
+  event.preventDefault();
+
+  const redirectUrl = this.getAttribute('data-target-url');
+
+  fetch(window.location.href, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({redirect_url: redirectUrl})
+  })
+  .then(response => {
+    if (!response.ok) response.json().then(data => {
+        alert(data.message)
+    });
+    else return response.json();
+  })
+  .then(data => {
+    window.location.href = data.redirect_url;
+  })
+  .catch(error => console.error('Error during start-contest POST:', error));
+});
+</script>
 {% endblock %}

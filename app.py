@@ -74,9 +74,11 @@ def registration():
         if db.add_user(data['nickname'], data['username'], data['password']):
             response = jsonify({"status": "success", "message": "Успешная регистрация"})
             response.status_code = 200
+            db_response = db.get_user(data['username'], data['password'])
+            flask.session['user_data'] =db_response
             return response, 200
         else:
-            response = jsonify({"status": "error", "message": "Ошибка регстрации. Пользователь уже существует."})
+            response = jsonify({"status": "error", "message": "Ошибка регстрации. Пользователь с таким логином уже существует."})
             response.status_code = 402
             return response, 402
     return render_template('registration.html')
@@ -126,18 +128,31 @@ def contests_admin():
     return render_template('contests_admin.html', contests=contests)
 
 
-@app.route('/contest/<int:contest_id>')
+@app.route('/contest/<int:contest_id>', methods=['GET', 'POST'])
 def contest_details(contest_id):
-    if 'user_data' not in flask.session:
-        return flask.redirect(url_for('login_user'))
+    if request.method == 'POST':
+        active_contest = db.get_user_active_contest(flask.session['user_data'][2])[0]
+        if active_contest != -1:
+            response = jsonify({"status": "error", "message": f"Ошибка, вы уже проходите контест {active_contest}"})
+            response.status_code = 402
+            return response, 402
+        data = request.get_json() or {}
+        redirect_url = data.get('redirect_url') or url_for('contest_problems', contest_id=contest_id)
+        contest_id = int(redirect_url.split('/')[2])
+        db.set_user_active_contest(contest_id, flask.session['user_data'][2])
+        return jsonify({'redirect_url': url_for('contest_problems', contest_id=contest_id)}), 200
+    
+    else:
+        if 'user_data' not in flask.session:
+            return flask.redirect(url_for('login_user'))
 
-    db_res = db.get_contest_by_id(contest_id)
-    contest = {
-        'id': db_res[0],
-        'name': db_res[1],
-        'description': db_res[2]
-    }
-    return render_template('contest_details.html', contest=contest)
+        db_res = db.get_contest_by_id(contest_id)
+        contest = {
+            'id': db_res[0],
+            'name': db_res[1],
+            'description': db_res[2]
+        }
+        return render_template('contest_details.html', contest=contest)
 
 @app.route('/contest_admin/<int:contest_id>', methods=['GET', 'POST'])
 def contest_details_admin(contest_id):
@@ -168,6 +183,8 @@ def contest_problems(contest_id):
         return flask.redirect(url_for('login_user'))
 
     if request.method == 'POST':
+        # print(request.get_json()['contest_id'])
+        db.set_user_active_contest(-1, flask.session['user_data'][2])
         # todo: Дописать окончательные расчёты и возможно исправить скрипт
         response = jsonify({"status": "error", "message": "Ошибка"})
         response.status_code = 402
@@ -198,8 +215,6 @@ def contest_problems_admin(contest_id):
                                         'Название',
                                         'Описание',
                                         json.dumps(['Вариант1'], ensure_ascii=False).encode('utf8'),
-                                        0,
-                                        0,
                                         0)
 
                 response = jsonify({"status": "success", "message": "Успешное добавление"})
@@ -215,9 +230,7 @@ def contest_problems_admin(contest_id):
                                        'Выходные данные',
                                        'Описание',
                                        'Описание входных данных',
-                                       'Описание выходных данных',
-                                       0,
-                                       0)
+                                       'Описание выходных данных')
 
                 response = jsonify({"status": "success", "message": "Успешное добавление"})
                 response.status_code = 200
