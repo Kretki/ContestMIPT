@@ -87,6 +87,9 @@ def registration():
 def contests():
     if 'user_data' not in flask.session:
         return flask.redirect(url_for('login_user'))
+    active_contest = int(db.get_user_active_contest(flask.session['user_data'][0])[0])
+    if active_contest != -1:
+        return flask.redirect(f'/contest/{active_contest}/problems')
 
     contests = []
     for contest in db.get_all_contests():
@@ -131,7 +134,7 @@ def contests_admin():
 @app.route('/contest/<int:contest_id>', methods=['GET', 'POST'])
 def contest_details(contest_id):
     if request.method == 'POST':
-        active_contest = db.get_user_active_contest(flask.session['user_data'][2])[0]
+        active_contest = db.get_user_active_contest(int(flask.session['user_data'][0]))[0]
         if active_contest != -1:
             response = jsonify({"status": "error", "message": f"Ошибка, вы уже проходите контест {active_contest}"})
             response.status_code = 402
@@ -139,7 +142,7 @@ def contest_details(contest_id):
         data = request.get_json() or {}
         redirect_url = data.get('redirect_url') or url_for('contest_problems', contest_id=contest_id)
         contest_id = int(redirect_url.split('/')[2])
-        db.set_user_active_contest(contest_id, flask.session['user_data'][2])
+        db.set_user_active_contest(contest_id, int(flask.session['user_data'][0]))
         return jsonify({'redirect_url': url_for('contest_problems', contest_id=contest_id)}), 200
     
     else:
@@ -184,13 +187,11 @@ def contest_problems(contest_id):
 
     if request.method == 'POST':
         # print(request.get_json()['contest_id'])
-        db.set_user_active_contest(-1, flask.session['user_data'][2])
+        db.set_user_active_contest(int(flask.session['user_data'][0]), -1)
         # todo: Дописать окончательные расчёты и возможно исправить скрипт
         response = jsonify({"status": "error", "message": "Ошибка"})
         response.status_code = 402
         return response, 402
-
-
 
     exersises = []
     for ex in db.get_contest_exs(contest_id):
@@ -288,7 +289,12 @@ def contest_problem(contest_id, problem_id):
         if ex_params[0] == 1:
             selected = int(request.form.get('option', -1))
             is_correct = (selected == problem['correct'])
-
+            right_answer, wrong_answer, _ = db.get_global_stats(int(flask.session['user_data'][0]))
+            if is_correct:
+                right_answer += 1
+            else:
+                wrong_answer += 1
+            db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
             # todo: Добавить сохранение ответов. Чтобы пользователь не мог дважды ответить на вопрос
 
             # selected = int(request.form.get('option', -1))
@@ -297,17 +303,23 @@ def contest_problem(contest_id, problem_id):
             # else:
             #     result = 'Неправильно'
         else:
-            compiler = request.form.get('compiler')
+            compiler = request.json['compiler'].lower()
             code = request.json['code']
             all_tests = db.get_tests(problem_id)
             input = [all_tests[i][0] for i in range(len(all_tests))]
             output = [all_tests[i][2] for i in range(len(all_tests))]
-            if test(code, compiler, input, output, float(ex_params[3].split(' ')[0])) == "OK":
+            res = test(code, compiler, input, output, float(ex_params[3].split(' ')[0]))
+            right_answer, wrong_answer, _ = db.get_global_stats(int(flask.session['user_data'][0]))
+            if res == "OK":
                 response = jsonify({"status": "success", "message": "Задание решено верно"})
+                right_answer += 1
+                db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
                 response.status_code = 200
                 return response, 200
             else:
                 response = jsonify({"status": "error", "message": "Ошибка при проходе тестирования"})
+                wrong_answer += 1
+                db.update_global_stats(int(flask.session['user_data'][0]), right_answer, wrong_answer)
                 response.status_code = 300
                 return response, 300
 

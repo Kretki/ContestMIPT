@@ -117,14 +117,14 @@ class DataBaseInterface:
         self.conn.commit()
         return True
     
-    def get_user_active_contest(self, login):
-        query = "SELECT active_contest_id FROM User WHERE login =?"
-        self.cursor.execute(query, (login,))
+    def get_user_active_contest(self, user_id):
+        query = "SELECT active_contest_id FROM User WHERE user_id =?"
+        self.cursor.execute(query, (user_id,))
         return self.cursor.fetchone()
     
-    def set_user_active_contest(self, login, contest_id):
-        query = "UPDATE User SET active_contest_id=? WHERE login=?"
-        self.cursor.execute(query, (contest_id, login))
+    def set_user_active_contest(self, user_id, contest_id):
+        query = "UPDATE User SET active_contest_id=? WHERE user_id=?"
+        self.cursor.execute(query, (contest_id, user_id))
         self.conn.commit()
     
     def add_test(self, UniqueID, input, test_code, output):
@@ -241,15 +241,26 @@ class DataBaseInterface:
         self.cursor.execute(query, (user_id,))
         return self.cursor.fetchall()
     
-    def start_contest_stats(self, user_id, active_contest_id):
+    def start_contest_stats(self, user_id):
+        active_contest_id = self.get_user_active_contest(user_id)[0]
+        query = "DELETE FROM GlobalUserStatistics WHERE active_contest_id =? AND user_id=?"
+        self.cursor.execute(query, (active_contest_id, user_id,))
+        self.conn.commit()
         query = "INSERT INTO GlobalUserStatistics (right_answer, wrong_answer, user_id, active_contest_id) VALUES (?,?,?,?)"
         self.cursor.execute(query, (0, 0, user_id, active_contest_id))
+        self.conn.commit()
     
-    def update_global_stats(self, user_id, ex_id, right_answer, wrong_answer):
-        query = '''INSERT INTO GlobalUserStatistics (right_answer, wrong_answer, user_id, ex_id) VALUES (?,?,?,?) 
-        ON CONFLICT (user_id, ex_id) 
-        DO UPDATE SET right_answer =?, wrong_answer =?'''
-        self.cursor.execute(query, (right_answer, wrong_answer, user_id, ex_id, right_answer, wrong_answer))
+    def get_global_stats_numbers(self, user_id):
+        active_contest_id = self.get_user_active_contest(user_id)[0]
+        query = "SELECT right_answer, wrong_answer WHERE user_id=? AND active_contest_id=?"
+        self.cursor.execute(query, (user_id, active_contest_id))
+        return self.cursor.fetchone()
+        
+    def update_global_stats(self, user_id, right_answer, wrong_answer):
+        active_contest_id = self.get_user_active_contest(user_id)[0]
+        query = '''UPDATE GlobalUserStatistics SET right_answer =?, wrong_answer =? WHERE user_id=? AND active_contest_id=?'''
+        self.cursor.execute(query, (right_answer, wrong_answer, user_id, active_contest_id))
+        self.conn.commit()
 
     def update_contest(self, contest_id, contest_name, contest_desc):
         query = "UPDATE Contest SET contest_name =?, contest_desc =? WHERE contest_id =?"

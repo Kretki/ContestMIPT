@@ -1,66 +1,102 @@
 import subprocess
+import os
+import sys
 
-
-def make_executable(prog: str, lang: str):
-  if (lang == "python"):
-    file = open("program.py", "w")
-    file.write(prog)
-    file.close()
-  elif (lang == "c++"):
-    file = open("program.cpp", "w")
-    file.write(prog)
-    file.close()
-    compiled = subprocess.run(["g++", "program.cpp"], capture_output=True)
-    if (compiled.returncode != 0):
-      return "CE"
-    subprocess.run(["rm", "program.cpp"])
-  elif (lang == "c"):
-    file = open("program.c", "w")
-    file.write(prog)
-    file.close()
-    compiled = subprocess.run(["gcc", "program.c"], capture_output=True)
-    if (compiled.returncode != 0):
-      return "CE"
-    subprocess.run(["rm", "program.c"])
-  return "OK"
-
-
-def single_test(lang: str, inp: str, out: str, tl: float):
-  file = open("input.txt", "w")
-  file.write(inp)
-  file.close()
-  file = open("input.txt")
- 
-  try:
+def make_executable(prog: str, lang: str) -> str:
+    """
+    Write source code to a file and compile if needed.
+    Returns:
+        "OK" if compilation (or setup) succeeded,
+        "CE" if there was a compile error.
+    """
     if lang == "python":
-      res = subprocess.run(["python3", "program.py"], stdin=file, timeout = tl, capture_output = True)
-    elif lang == "c" or lang == "c++":
-      res = subprocess.run(["./a.out"], stdin=file, timeout = tl, capture_output = True)
-  except subprocess.TimeoutExpired:
-    return "TL" 
+        src = "program.py"
+        with open(src, "w") as f:
+            f.write(prog)
+    elif lang in ("c++", "c"):  # C and C++
+        ext = "cpp" if lang == "c++" else "c"
+        src = f"program.{ext}"
+        exe = "program_exec"
+        with open(src, "w") as f:
+            f.write(prog)
+        compiler = "g++" if lang == "c++" else "gcc"
+        compiled = subprocess.run([compiler, src, "-o", exe], capture_output=True)
+        if compiled.returncode != 0:
+            # Clean up source on compile error
+            os.remove(src)
+            return "CE"
+        # Remove source file, keep executable
+        os.remove(src)
+        return "OK"
+    else:
+        return "CE"
+    return "OK"
 
-  subprocess.run(["rm", "input.txt"])
 
-  if res.returncode != 0:
-    return "RE"
+def single_test(lang: str, inp: str, expected: str, tl: float) -> str:
+    """
+    Run a single test case by feeding inp to the executable and comparing its output to expected.
+    Returns status code strings: "OK", "TL", "RE", or "WA".
+    """
+    # Write input to temporary file
+    in_file = "input.txt"
+    with open(in_file, "w") as f:
+        f.write(inp)
 
-  prog_out = res.stdout.decode("utf-8")
-  if (prog_out[-1] == "\n"):
-    prog_out = prog_out[:-1]
-  if out != prog_out:
-    return "WA"
+    cmd = []
+    if lang == "python":
+        cmd = [sys.executable, "program.py"]
+    else:
+        cmd = ["./program_exec"]
 
-  return "OK"
-    
+    try:
+        proc = subprocess.run(cmd, stdin=open(in_file, "r"), timeout=tl, capture_output=True)
+    except subprocess.TimeoutExpired:
+        os.remove(in_file)
+        return "TL"
 
-def test(prog: str, lang: str, inputs: list, outputs: list, tl: float):
-  res = make_executable(prog, lang)
-  if res != "OK":
-    return res
-  for i in range(len(inputs)):
-    res = single_test(lang, inputs[i], outputs[i], tl)
-    if res != "OK":
-      subprocess.run(["rm", "a.out" if lang != "python" else "program.py"])
-      return res + " test #" + str(i+1)
-  subprocess.run(["rm", "a.out" if lang != "python" else "program.py"])
-  return "OK"
+    os.remove(in_file)
+
+    if proc.returncode != 0:
+        return "RE"
+
+    out = str(proc.stdout.decode().rstrip("\n")).strip()
+    if out != str(expected).strip():
+        return "WA"
+    return "OK"
+
+
+def test(prog: str, lang: str, inputs: list, outputs: list, tl: float) -> str:
+    """
+    Run a sequence of tests on the given prog string in the specified language.
+    Returns:
+        "OK" if all tests pass,
+        Otherwise, an error code with test number (e.g., "WA test #2").
+    """
+    status = make_executable(prog, lang)
+    if status != "OK":
+        return status
+
+    for idx, (inp, expected) in enumerate(zip(inputs, outputs), start=1):
+        status = single_test(lang, inp, expected, tl)
+        if status != "OK":
+            # Clean up executable or script
+            if lang == "python":
+                os.remove("program.py")
+            else:
+                os.remove("program_exec")
+            return f"{status} test #{idx}"
+
+    # Cleanup after all tests
+    if lang == "python":
+        os.remove("program.py")
+    else:
+        os.remove("program_exec")
+    return "OK"
+
+# Example usage when running this file directly:
+if __name__ == "__main__":
+    # Placeholder: replace these with actual program and tests
+    sample_prog = sys.stdin.read()
+    # Parse arguments or integrate with a higher-level runner
+    print("This module defines 'test'. Use it within your own harness.")

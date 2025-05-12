@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
 
         const data = {
-            code: document.getElementById('code').value
+            code: document.getElementById('code').value,
+            compiler: document.getElementById('language').value
         };
         
         fetch(window.location.href, { 
@@ -82,7 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Success:', data);
             alert("Решение верное");
-            window.location.href = '/contest/' + window.location.href.split("/")[1] + '/problems';
+            window.location.href = '/contest' + window.location.href.split("/")[1] + '/problems';
         })
         .catch((error) => {
             console.error('Ошибка:', error);
